@@ -22,6 +22,14 @@ ClientApp::ClientApp()
         sf::VideoMode(800, 600),
         "Welcome to tanca!"
     );
+
+    getWindow("main")->getWidget<tgui::Button>("by_name_button")->onClick(
+        [&, this]
+        {
+            getWindow("main")->setTitle("Insert server data!");
+            getWindow("main")->loadWidgetsFromFile("../assets/interfaces/client_by_name.txt");
+        }
+    );
 }
 
 void ClientApp::update(const app::Seconds elapsed_seconds)

@@ -1,0 +1,50 @@
+Renderer.1 {
+    BackgroundColor = #F5F5F5;
+    BackgroundColorDisabled = #E6E6E6;
+    BackgroundColorHover = white;
+    BorderColor = #3C3C3C;
+    BorderColorDisabled = #7D7D7D;
+    BorderColorHover = black;
+    Borders = (1, 1, 1, 1);
+    CaretColor = black;
+    CaretWidth = 1;
+    DefaultTextColor = #A0A0A0;
+    Padding = (0, 0, 0, 0);
+    SelectedTextBackgroundColor = #006EFF;
+    SelectedTextColor = white;
+    TextColor = #3C3C3C;
+    TextColorDisabled = #7D7D7D;
+    Texture = None;
+    TextureDisabled = None;
+    TextureFocused = None;
+    TextureHover = None;
+}
+
+Picture.background_image {
+    Position = (-240, 0);
+    Size = (1224, 911);
+
+    Renderer {
+        Texture = "../images/client_by_name.png" Smooth;
+        TransparentTexture = false;
+    }
+}
+
+EditBox.name_editbox {
+    Alignment = Center;
+    DefaultText = "Enter server name...";
+    Position = (240, 170);
+    Renderer = &1;
+    Size = (330, 42);
+    TextSize = 30;
+}
+
+EditBox.password_editbox {
+    Alignment = Center;
+    DefaultText = "Enter server password...";
+    Position = (220, 290);
+    Renderer = &1;
+    Size = (380, 42);
+    TextSize = 30;
+    Visible = false;
+}
