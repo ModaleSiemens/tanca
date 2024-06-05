@@ -1,0 +1,9 @@
+[wrap-git]
+
+directory = app
+url       = https://github.com/ModaleSiemens/app.git
+revision  = head
+
+[provide]
+
+libapp = lib_app_dep 

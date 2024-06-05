@@ -1,0 +1,9 @@
+[wrap-git]
+
+directory = nets
+url       = https://github.com/ModaleSiemens/nets.git
+revision  = head
+
+[provide]
+
+libnets = lib_nets_dep
