@@ -1,2 +1,6 @@
 build
 .vscode
+subprojects/collection
+subprojects/app
+subprojects/nets
+subprojects/tgui
