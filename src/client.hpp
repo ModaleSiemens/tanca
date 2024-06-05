@@ -14,10 +14,22 @@ class ClientApp : public app::Application
 
 ClientApp::ClientApp()
 {
-
+    // Add main window
+    addWindow(
+        "main",
+        true,
+        "../assets/interfaces/client1.txt",
+        sf::VideoMode(800, 600),
+        "Welcome to tanca!"
+    );
 }
 
 void ClientApp::update(const app::Seconds elapsed_seconds)
 {
     Application::update(elapsed_seconds);
+}
+
+ClientApp::~ClientApp()
+{
+
 }
