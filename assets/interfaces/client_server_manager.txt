@@ -1,0 +1,86 @@
+Renderer.1 {
+    BackgroundColor = #F5F5F5;
+    BackgroundColorDisabled = #E6E6E6;
+    BackgroundColorHover = white;
+    BorderColor = #3C3C3C;
+    BorderColorDisabled = #7D7D7D;
+    BorderColorHover = black;
+    Borders = (1, 1, 1, 1);
+    CaretColor = black;
+    CaretWidth = 1;
+    DefaultTextColor = #A0A0A0;
+    Padding = (0, 0, 0, 0);
+    SelectedTextBackgroundColor = #006EFF;
+    SelectedTextColor = white;
+    TextColor = #3C3C3C;
+    TextColorDisabled = #7D7D7D;
+    Texture = None;
+    TextureDisabled = None;
+    TextureFocused = None;
+    TextureHover = None;
+}
+
+Renderer.2 {
+    BackgroundColor = #F5F5F5;
+    BackgroundColorDisabled = #E6E6E6;
+    BackgroundColorDown = #EBEBEB;
+    BackgroundColorHover = white;
+    BorderColor = #3C3C3C;
+    BorderColorDisabled = #7D7D7D;
+    BorderColorDown = black;
+    BorderColorFocused = #1E1EB4;
+    BorderColorHover = black;
+    Borders = (1, 1, 1, 1);
+    TextColor = #3C3C3C;
+    TextColorDisabled = #7D7D7D;
+    TextColorDown = black;
+    TextColorHover = black;
+    Texture = None;
+    TextureDisabled = None;
+    TextureDown = None;
+    TextureDownFocused = None;
+    TextureDownHover = None;
+    TextureFocused = None;
+    TextureHover = None;
+}
+
+Picture.background_image {
+    Size = (1224, 911);
+
+    Renderer {
+        Texture = "../images/client_by_name.png" Smooth;
+        TransparentTexture = false;
+    }
+}
+
+EditBox.address_editbox {
+    DefaultText = "Enter server manager address...";
+    Position = (140, 80);
+    Renderer = &1;
+    Size = (500, 57.8);
+    TextSize = 30;
+}
+
+EditBox.port_editbox {
+    DefaultText = "Enter server manager port...";
+    Position = (170, 210);
+    Renderer = &1;
+    Size = (440, 57.8);
+    TextSize = 30;
+}
+
+Button.back_button {
+    Position = (40, 500);
+    Renderer = &2;
+    Size = (150, 52.5);
+    Text = Back;
+    TextSize = 25;
+}
+
+Button.connect_button {
+    Position = (280, 350);
+    Renderer = &2;
+    Size = (220, 77);
+    Text = "Connect!";
+    TextSize = 40;
+}

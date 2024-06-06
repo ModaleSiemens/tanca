@@ -24,19 +24,34 @@ executable(
     'tanca_client',
     client_src,
 
-    dependencies: deps
+    dependencies: deps,
+
+    link_args: 
+    [
+        '-lstdc++exp' # Enable std::print, std::println
+    ]    
 )
 
 executable(
     'tanca_server',
     server_src,
 
-    dependencies: deps
+    dependencies: deps,
+
+    link_args: 
+    [
+        '-lstdc++exp' # Enable std::print, std::println
+    ]    
 )
 
 executable(
     'tanca_server_manager',
     server_manager_src,
 
-    dependencies: deps
+    dependencies: deps,
+
+    link_args: 
+    [
+        '-lstdc++exp' # Enable std::print, std::println
+    ]    
 )
