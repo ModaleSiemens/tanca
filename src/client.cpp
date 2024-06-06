@@ -17,6 +17,8 @@ int main()
 
 ClientApp::ClientApp()
 {
+    setupMessageCallbacks();
+
     // Add main window
     addWindow(
         "main",
@@ -38,32 +40,39 @@ void ClientApp::update(const app::Seconds elapsed_seconds)
 
 void ClientApp::onConnection(std::shared_ptr<Remote> server)
 {
-    if(status == Status::connecting_to_server_manager)
-    {
-        server->setOnReceiving(
-            Messages::server_list_response,
-            [&, this](mdsm::Collection servers_data_collection, nets::TcpRemote<Messages>& server)
-            {
-                std::lock_guard<std::mutex> lock_guard {internal_server_list_mutex};
-                
-                internal_server_list.clear();
+}
 
-                while(!servers_data_collection.isEmpty())
-                {
-                    internal_server_list.push_back(
-                        ServerData{
-                            servers_data_collection.retrieve<std::string>(),
-                            servers_data_collection.retrieve<bool>       (),
-                            servers_data_collection.retrieve<std::size_t>(),
-                            servers_data_collection.retrieve<std::size_t>()
-                        }
-                    );
-                }
-            }
-        );
+void ClientApp::setupMessageCallbacks()
+{
+    server->setOnReceiving(
+        Messages::server_list_response,
+        std::bind(onServerListResponse, this, std::placeholders::_1, std::placeholders::_2)
+    );
 
-        server->send(mdsm::Collection{} << Messages::server_list_request);
-    }
+    server->setOnReceiving(
+        Messages::server_not_found,
+        std::bind(onServerNotFound, this, std::placeholders::_1, std::placeholders::_2)
+    );
+
+    server->setOnReceiving(
+        Messages::server_full,
+        std::bind(onServerFull, this, std::placeholders::_1, std::placeholders::_2)
+    );    
+
+    server->setOnReceiving(
+        Messages::wrong_password,
+        std::bind(onWrongPassword, this, std::placeholders::_1, std::placeholders::_2)
+    );    
+
+    server->setOnReceiving(
+        Messages::connection_refused,
+        std::bind(onConnectionRefused, this, std::placeholders::_1, std::placeholders::_2)
+    );    
+
+    server->setOnReceiving(
+        Messages::server_address_response,
+        std::bind(onServerAddressResponse, this, std::placeholders::_1, std::placeholders::_2)
+    );    
 }
 
 void ClientApp::setupWelcomeInterface()
@@ -113,7 +122,6 @@ void ClientApp::setupServerManagerPromptInterface()
             }
             else if(!isValidAddress(address))
             {
-                std::println("Address not valid");
                 main_window->addErrorToWidget(
                     "address_editbox",
                     "<color=white>Invalid address!</color>",
@@ -122,7 +130,6 @@ void ClientApp::setupServerManagerPromptInterface()
             }
             else 
             {
-                std::println("Removing error");
                 main_window->removeErrorFromWidget("address_editbox");
             }
 
@@ -141,10 +148,8 @@ void ClientApp::setupServerManagerPromptInterface()
             
             if(isValidAddress(address) && !port.empty())
             {
-                status = Status::connecting_to_server_manager;
-
-                setServerAddress(address);
-                setServerPort(port);
+                setServerAddress(server_manager_address = address);
+                setServerPort   (server_manager_port    = port);
 
                 if(!connect())
                 {
@@ -153,6 +158,12 @@ void ClientApp::setupServerManagerPromptInterface()
                         "<color=white>Failed to connect to server manager...</color>",
                         25
                     );
+                }
+                else 
+                {
+                    status = Status::connected_to_server_manager;
+                    
+                    setupByNamePromptInterface();
                 }
             } 
         }
@@ -171,25 +182,156 @@ void ClientApp::setupByNamePromptInterface()
         }
     );
 
+    main_window->getWidget<tgui::Button>("connect_button")->onClick(
+        [&, this]
+        {
+            if(
+                const std::string name {main_window->getWidget<tgui::EditBox>("name_editbox")->getText().toStdString()};
+                name != ""
+            )
+            {
+                main_window->removeErrorFromWidget("connect_button");
+
+                server->send(
+                    mdsm::Collection{}
+                        << Messages::connection_request
+                        << name
+                        << main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()
+                );
+            }
+            else 
+            {
+                main_window->addErrorToWidget(
+                    "name_editbox",
+                    "<color=white>Server name can't be empty!</color>",
+                    25
+                );
+            }
+        }
+    );
+
     while(main_window->getWidget("servers_listview") != nullptr)
     {
-        std::this_thread::sleep_for(PingTime{1.0});
-
-        std::lock_guard<std::mutex> lock_guard {internal_server_list_mutex};
-
-        auto server_listview {main_window->getWidget<tgui::ListView>("servers_listview")};
-
-        for(const auto& server_data : internal_server_list)
+        if(status.load() == Status::connected_to_server_manager)
         {
-            server_listview->addItem(
-                std::vector<tgui::String>
-                {
-                    server_data.name,
-                    server_data.password_required ? "Yes" : "No",
-                    std::to_string(server_data.players_count),
-                    server_data.max_player_count > 0 ? std::to_string(server_data.max_player_count) : "No limit"
-                }
-            );
+            server->send(mdsm::Collection{} << Messages::server_list_request);
+
+            auto server_listview {main_window->getWidget<tgui::ListView>("servers_listview")};
+
+            std::lock_guard<std::mutex> lock_guard {internal_server_list_mutex};
+
+            for(const auto& server_data : internal_server_list)
+            {
+                server_listview->addItem(
+                    std::vector<tgui::String>
+                    {
+                        server_data.name,
+                        server_data.password_required ? "Yes" : "No",
+                        std::to_string(server_data.players_count),
+                        server_data.max_player_count > 0 ? std::to_string(server_data.max_player_count) : "No limit"
+                    }
+                );
+            }
+
+            std::this_thread::sleep_for(PingTime{1.0});
+        }
+    }
+}
+
+void ClientApp::onServerListResponse(mdsm::Collection servers_data, nets::TcpRemote<Messages> &server)
+{
+    std::lock_guard<std::mutex> lock_guard {internal_server_list_mutex};
+    
+    internal_server_list.clear();
+
+    while(!servers_data.isEmpty())
+    {
+        internal_server_list.push_back(
+            ServerData{
+                servers_data.retrieve<std::string>(),
+                servers_data.retrieve<bool>       (),
+                servers_data.retrieve<std::size_t>(),
+                servers_data.retrieve<std::size_t>()
+            }
+        );
+    }    
+}
+
+void ClientApp::onServerNotFound(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+{
+    main_window->addErrorToWidget(
+        "connect_button",
+        "<color=white>Server not found!</color>",
+        25
+    );
+}
+
+void ClientApp::onServerFull(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+{
+    main_window->addErrorToWidget(
+        "connect_button",
+        "<color=white>Server is full!</color>",
+        25
+    );
+}
+
+void ClientApp::onWrongPassword(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+{
+    main_window->addErrorToWidget(
+        "connect_button",
+        "<color=white>Password is wrong!</color>",
+        25
+    );
+}
+
+void ClientApp::onConnectionRefused(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+{
+    main_window->addErrorToWidget(
+        "connect_button",
+        std::string{"<color=white>Connection refused!\n</color>"} + message.retrieve<std::string>(),
+        25
+    );
+}
+
+void ClientApp::setupConnectedToServerInterface()
+{
+    main_window->setTitle("Get ready to play!");
+    main_window->loadWidgetsFromFile("../assets/interfaces/client_connected");
+}
+
+void ClientApp::onServerAddressResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server)
+{
+    disconnect();
+
+    status = Status::not_connected;
+
+    setServerAddress(message.retrieve<std::string>());
+    setServerPort   (message.retrieve<std::string>());
+
+    if(connect())
+    {
+        status = Status::connected_to_server;
+
+        setupConnectedToServerInterface();
+    }
+    else
+    {
+        main_window->addErrorToWidget(
+            "connect_button",
+            std::string{"<color=white>Failed to connect to server!\n</color>"} + message.retrieve<std::string>(),
+            25
+        );
+
+        setServerAddress(server_manager_address);
+        setServerPort   (server_manager_port);        
+
+        if(!connect())
+        {
+            setupServerManagerPromptInterface();
+        }
+        else 
+        {
+            status = Status::connected_to_server_manager;
         }
     }
 }
@@ -198,29 +340,6 @@ std::shared_ptr<tgui::Button> ClientApp::getBackButton()
 {
     return main_window->getWidget<tgui::Button>("back_button");
 }
-
-/*
-bool ClientApp::setBackButton(const std::string interface_path, void (ClientApp::* function)())
-{
-    if(main_window->getWidget<tgui::Button>("back_button") == nullptr)
-    {
-        return false;
-    }
-    else 
-    {
-        main_window->getWidget<tgui::Button>("back_button")->onClick(
-            [=, this]
-            {
-                main_window->loadWidgetsFromFile(interface_path);
-
-                (this->*function)();
-            }
-        );
-
-        return true;
-    }
-}
-*/
 
 ClientApp::~ClientApp()
 {

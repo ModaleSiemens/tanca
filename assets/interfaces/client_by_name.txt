@@ -20,6 +20,30 @@ Renderer.1 {
     TextureHover = None;
 }
 
+Renderer.2 {
+    BackgroundColor = #F5F5F5;
+    BackgroundColorDisabled = #E6E6E6;
+    BackgroundColorDown = #EBEBEB;
+    BackgroundColorHover = white;
+    BorderColor = #3C3C3C;
+    BorderColorDisabled = #7D7D7D;
+    BorderColorDown = black;
+    BorderColorFocused = #1E1EB4;
+    BorderColorHover = black;
+    Borders = (1, 1, 1, 1);
+    TextColor = #3C3C3C;
+    TextColorDisabled = #7D7D7D;
+    TextColorDown = black;
+    TextColorHover = black;
+    Texture = None;
+    TextureDisabled = None;
+    TextureDown = None;
+    TextureDownFocused = None;
+    TextureDownHover = None;
+    TextureFocused = None;
+    TextureHover = None;
+}
+
 Picture.background_image {
     Position = (-240, 0);
     Size = (1224, 911);
@@ -33,7 +57,7 @@ Picture.background_image {
 EditBox.name_editbox {
     Alignment = Center;
     DefaultText = "Enter server name...";
-    Position = (400, 440);
+    Position = (340, 370);
     Renderer = &1;
     Size = (330, 42);
     TextSize = 30;
@@ -42,7 +66,7 @@ EditBox.name_editbox {
 EditBox.password_editbox {
     Alignment = Center;
     DefaultText = "Enter server password...";
-    Position = (360, 520);
+    Position = (340, 430);
     Renderer = &1;
     Size = (380, 42);
     TextSize = 30;
@@ -50,32 +74,9 @@ EditBox.password_editbox {
 
 Button.back_button {
     Position = (50, 490);
+    Renderer = &2;
     Text = Back;
     TextSize = 25;
-
-    Renderer {
-        BackgroundColor = #F5F5F5;
-        BackgroundColorDisabled = #E6E6E6;
-        BackgroundColorDown = #EBEBEB;
-        BackgroundColorHover = white;
-        BorderColor = #3C3C3C;
-        BorderColorDisabled = #7D7D7D;
-        BorderColorDown = black;
-        BorderColorFocused = #1E1EB4;
-        BorderColorHover = black;
-        Borders = (1, 1, 1, 1);
-        TextColor = #3C3C3C;
-        TextColorDisabled = #7D7D7D;
-        TextColorDown = black;
-        TextColorHover = black;
-        Texture = None;
-        TextureDisabled = None;
-        TextureDown = None;
-        TextureDownFocused = None;
-        TextureDownHover = None;
-        TextureFocused = None;
-        TextureHover = None;
-    }
 }
 
 ListView.servers_listview {
@@ -84,11 +85,11 @@ ListView.servers_listview {
     HeaderSeparatorHeight = 0;
     HeaderVisible = true;
     ItemHeight = 19;
-    Position = (50, 40);
+    Position = (10, 10);
     ResizableColumns = true;
     SeparatorWidth = 1;
     ShowVerticalGridLines = 1;
-    Size = (678, 340);
+    Size = (608, 340);
     TextSize = 20;
 
     Renderer {
@@ -142,4 +143,12 @@ ListView.servers_listview {
     Column {
         Text = "Max players";
     }
+}
+
+Button.connect_button {
+    Position = (340, 510);
+    Renderer = &2;
+    Size = (200, 56);
+    Text = "Connect!";
+    TextSize = 30;
 }

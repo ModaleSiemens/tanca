@@ -23,10 +23,23 @@ class ClientApp : public app::Application, private nets::TcpClient<Messages, Rem
     private:
         virtual void onConnection(std::shared_ptr<Remote> server) override;
 
+        void setupMessageCallbacks();
+
         // Interfaces set up member functions
         void setupWelcomeInterface();
         void setupServerManagerPromptInterface();
         void setupByNamePromptInterface();
+
+        void onServerListResponse(mdsm::Collection servers_data, nets::TcpRemote<Messages>& server);
+        void onServerNotFound    (mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onServerFull        (mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onWrongPassword     (mdsm::Collection message, nets::TcpRemote<Messages>& server);
+
+        void onServerAddressResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server);
+
+        void onConnectionRefused(mdsm::Collection message, nets::TcpRemote<Messages>& server);
+
+        void setupConnectedToServerInterface();
 
         //bool setBackButton(const std::string interface_path, void (ClientApp::* function)());
         std::shared_ptr<tgui::Button> getBackButton();
@@ -35,11 +48,17 @@ class ClientApp : public app::Application, private nets::TcpClient<Messages, Rem
 
         enum class Status
         {
-            connecting_to_server_manager,
-            connecting_to_server
-        } status;
+            not_connected,
+            connected_to_server_manager,
+            connected_to_server
+        };
+
+        std::atomic<Status> status;
 
         std::mutex internal_server_list_mutex;
 
         std::vector<ServerData> internal_server_list;
+        
+        std::string server_manager_address;
+        std::string server_manager_port;
 };

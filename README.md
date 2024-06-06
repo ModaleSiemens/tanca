@@ -13,7 +13,10 @@ Client App:
     2. Tries to connect.
 
     By name:
-    1. Prompts for server name;
-    2. Sends request to Manager;
-    3. Receives response: if a password is necessary, it asks it to the user
+    1. Prompts for server name and password
+    2. Server Manager might respond with
+        - server_not_found 
+        - server_full
+        - wrong_password
+        - connection_refused + string
 

@@ -17,5 +17,11 @@ enum class Messages
     ping_request,
     ping_response,
     server_list_request,
-    server_list_response
+    server_list_response,
+    connection_request,
+    server_not_found,
+    server_full,
+    wrong_password,
+    connection_refused,
+    server_address_response
 };
