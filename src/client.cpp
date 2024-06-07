@@ -45,12 +45,12 @@ void ClientApp::onConnection(std::shared_ptr<Remote> server)
 void ClientApp::setupMessageCallbacks()
 {
     server->setOnReceiving(
-        Messages::server_list_response,
+        Messages::server_manager_server_list_response,
         std::bind(onServerListResponse, this, std::placeholders::_1, std::placeholders::_2)
     );
 
     server->setOnReceiving(
-        Messages::server_not_found,
+        Messages::server_manager_server_not_found,
         std::bind(onServerNotFound, this, std::placeholders::_1, std::placeholders::_2)
     );
 
@@ -60,17 +60,17 @@ void ClientApp::setupMessageCallbacks()
     );    
 
     server->setOnReceiving(
-        Messages::wrong_password,
+        Messages::server_manager_wrong_password,
         std::bind(onWrongPassword, this, std::placeholders::_1, std::placeholders::_2)
     );    
 
     server->setOnReceiving(
-        Messages::connection_refused,
+        Messages::server_manager_connection_refused,
         std::bind(onConnectionRefused, this, std::placeholders::_1, std::placeholders::_2)
     );    
 
     server->setOnReceiving(
-        Messages::server_address_response,
+        Messages::server_manager_server_address_response,
         std::bind(onServerAddressResponse, this, std::placeholders::_1, std::placeholders::_2)
     );    
 }
@@ -194,7 +194,7 @@ void ClientApp::setupByNamePromptInterface()
 
                 server->send(
                     mdsm::Collection{}
-                        << Messages::connection_request
+                        << Messages::client_connection_request
                         << name
                         << main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()
                 );
@@ -214,7 +214,7 @@ void ClientApp::setupByNamePromptInterface()
     {
         if(status.load() == Status::connected_to_server_manager)
         {
-            server->send(mdsm::Collection{} << Messages::server_list_request);
+            server->send(mdsm::Collection{} << Messages::client_server_list_request);
 
             auto server_listview {main_window->getWidget<tgui::ListView>("servers_listview")};
 

@@ -1,0 +1,186 @@
+Renderer.1 {
+    BackgroundColor = #F5F5F5;
+    BackgroundColorDisabled = #E6E6E6;
+    BackgroundColorHover = white;
+    BorderColor = #3C3C3C;
+    BorderColorDisabled = #7D7D7D;
+    BorderColorHover = black;
+    Borders = (1, 1, 1, 1);
+    CaretColor = black;
+    CaretWidth = 1;
+    DefaultTextColor = #A0A0A0;
+    Padding = (0, 0, 0, 0);
+    SelectedTextBackgroundColor = #006EFF;
+    SelectedTextColor = white;
+    TextColor = #3C3C3C;
+    TextColorDisabled = #7D7D7D;
+    Texture = None;
+    TextureDisabled = None;
+    TextureFocused = None;
+    TextureHover = None;
+}
+
+Picture.background_image {
+    Position = (0, -30);
+    Size = (810, 800);
+
+    Renderer {
+        Texture = "../images/server_back1.png" Smooth;
+        TransparentTexture = false;
+    }
+}
+
+EditBox.world_name_editbox {
+    DefaultText = "Enter world name...";
+    Position = (20, 60);
+    Renderer = &1;
+    Size = (300, 36.4);
+    TextSize = 30;
+}
+
+EditBox.password_editbox {
+    DefaultText = "Enter password...";
+    Position = (20, 180);
+    Renderer = &1;
+    Size = (270, 36.4);
+    TextSize = 30;
+}
+
+EditBox.max_player_count_editbox {
+    DefaultText = "Enter max player count...";
+    Position = (20, 240);
+    Renderer = &1;
+    Size = (390, 36.4);
+    TextSize = 30;
+}
+
+EditBox.name_editbox {
+    DefaultText = "Enter desired name...";
+    Position = (450, 80);
+    Renderer = &1;
+    Size = (330, 36.4);
+    TextSize = 30;
+    Visible = false;
+}
+
+CheckBox.make_public_checkbox {
+    Position = (410, 550);
+    Size = (30, 30);
+    TextSize = 13;
+
+    Renderer {
+        BackgroundColor = #F5F5F5;
+        BackgroundColorDisabled = #E6E6E6;
+        BackgroundColorHover = white;
+        BorderColor = #3C3C3C;
+        BorderColorDisabled = #7D7D7D;
+        BorderColorFocused = #1E1EB4;
+        BorderColorHover = black;
+        Borders = (1, 1, 1, 1);
+        CheckColor = #3C3C3C;
+        CheckColorDisabled = #7D7D7D;
+        CheckColorHover = black;
+        TextColor = #3C3C3C;
+        TextColorDisabled = #7D7D7D;
+        TextColorHover = black;
+        TextDistanceRatio = 0.2;
+        TextureChecked = None;
+        TextureCheckedDisabled = None;
+        TextureCheckedFocused = None;
+        TextureCheckedHover = None;
+        TextureUnchecked = None;
+        TextureUncheckedDisabled = None;
+        TextureUncheckedFocused = None;
+        TextureUncheckedHover = None;
+    }
+}
+
+RichTextLabel.make_public_richtextlabel {
+    AutoSize = true;
+    Position = (280, 500);
+    Size = (308, 39);
+    Text = "<color=white>Make server public?</color>";
+    TextSize = 30;
+
+    Renderer {
+        BackgroundColor = transparent;
+        BorderColor = #3C3C3C;
+        Borders = (0, 0, 0, 0);
+        TextColor = #3C3C3C;
+        TextureBackground = None;
+
+        Scrollbar {
+            ArrowBackgroundColor = #F5F5F5;
+            ArrowBackgroundColorHover = white;
+            ArrowColor = #3C3C3C;
+            ArrowColorHover = black;
+            TextureArrowDown = None;
+            TextureArrowDownHover = None;
+            TextureArrowUp = None;
+            TextureArrowUpHover = None;
+            TextureThumb = None;
+            TextureThumbHover = None;
+            TextureTrack = None;
+            TextureTrackHover = None;
+            ThumbColor = #DCDCDC;
+            ThumbColorHover = #E6E6E6;
+            TrackColor = #F5F5F5;
+        }
+    }
+}
+
+Button.start_button {
+    Position = (360, 390);
+    Text = "Start!";
+    TextSize = 30;
+
+    Renderer {
+        BackgroundColor = #F5F5F5;
+        BackgroundColorDisabled = #E6E6E6;
+        BackgroundColorDown = #EBEBEB;
+        BackgroundColorHover = white;
+        BorderColor = #3C3C3C;
+        BorderColorDisabled = #7D7D7D;
+        BorderColorDown = black;
+        BorderColorFocused = #1E1EB4;
+        BorderColorHover = black;
+        Borders = (1, 1, 1, 1);
+        TextColor = #3C3C3C;
+        TextColorDisabled = #7D7D7D;
+        TextColorDown = black;
+        TextColorHover = black;
+        Texture = None;
+        TextureDisabled = None;
+        TextureDown = None;
+        TextureDownFocused = None;
+        TextureDownHover = None;
+        TextureFocused = None;
+        TextureHover = None;
+    }
+}
+
+EditBox.server_manager_address_editbox {
+    DefaultText = "Enter server manager address...";
+    Position = (450, 180);
+    Renderer = &1;
+    Size = (330, 36.4);
+    TextSize = 20;
+    Visible = false;
+}
+
+EditBox.server_manager_port_editbox {
+    DefaultText = "Enter server manager port...";
+    Position = (480, 280);
+    Renderer = &1;
+    Size = (300, 36.4);
+    TextSize = 20;
+    Visible = false;
+}
+
+EditBox.port_editbox {
+    DefaultText = "Enter server port...";
+    Position = (20, 120);
+    Renderer = &1;
+    Size = (290, 36.4);
+    TextSize = 30;
+}
