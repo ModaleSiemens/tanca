@@ -26,3 +26,20 @@ bool isValidAddress(const std::string_view address)
 {
     return isValidIPv4Address(address) || isValidIPv6Address(address);
 }
+
+bool isValidPort(const std::size_t port)
+{
+    return port >= 1 && port <= 65535;
+}
+
+bool isValidPort(const std::string_view port)
+{
+    try
+    {
+        return isValidPort(std::stoull(std::string{port}));
+    }
+    catch(const std::exception& e)
+    {
+        return false;
+    }
+}
