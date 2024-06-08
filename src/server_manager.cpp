@@ -55,7 +55,13 @@ void ServerManager::onClientConnection(std::shared_ptr<Remote> client)
     client->setOnReceiving(
         Messages::server_go_private,
         std::bind(onServerGoingPrivateRequest, this, std::placeholders::_1, std::placeholders::_2)
+    ); 
+
+    client->setOnReceiving(
+        Messages::server_password_check_response,
+        std::bind(onServerPasswordCheckResponse, this, std::placeholders::_1, std::placeholders::_2)
     );    
+
 
 
     bool is_server {false};
@@ -130,7 +136,7 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
 
         (*server_iter)->send(
             mdsm::Collection{}
-                << Messages::server_manager_password_request
+                << Messages::server_manager_password_check_request
                 << client.getAddress()
         );
     }
@@ -170,6 +176,8 @@ void ServerManager::onServerGoPublicRequest(mdsm::Collection message, nets::TcpR
             message.retrieve<std::size_t>(),
             message.retrieve<std::size_t>()
         };
+
+        server.send(mdsm::Collection{} << Messages::server_manager_server_added_to_list);
     }
 }
 
@@ -199,7 +207,7 @@ void ServerManager::onServerGoingPrivateRequest(mdsm::Collection message, nets::
     server.stop();
 }
 
-void ServerManager::onServerPasswordResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server)
+void ServerManager::onServerPasswordCheckResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
     const auto password_was_right {message.retrieve<bool>()};
     const auto client_address     {message.retrieve<std::string>()};

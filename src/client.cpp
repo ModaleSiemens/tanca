@@ -40,6 +40,7 @@ void ClientApp::update(const app::Seconds elapsed_seconds)
 
 void ClientApp::onConnection(std::shared_ptr<Remote> server)
 {
+
 }
 
 void ClientApp::setupMessageCallbacks()
@@ -192,6 +193,7 @@ void ClientApp::setupByNamePromptInterface()
             {
                 main_window->removeErrorFromWidget("connect_button");
 
+                // Sending request to SERVER MANAGER
                 server->send(
                     mdsm::Collection{}
                         << Messages::client_connection_request

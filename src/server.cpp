@@ -43,34 +43,79 @@ void ServerApp::update(const app::Seconds elapsed_seconds)
     Application::update(elapsed_seconds);
 }
 
+void ServerApp::goPublic()
+{
+    if(!is_public)
+    {
+        server->send(
+            mdsm::Collection{}
+                << Messages::server_go_public
+                << name
+                << !password.empty()
+                << players_count.load()
+                << max_players_count
+        );
+    }
+}
+
+void ServerApp::goPrivate()
+{
+    if(is_public)
+    {
+        server->send(mdsm::Collection{} << Messages::server_go_private);
+    }
+}
+
 ServerApp::~ServerApp()
 {
 }
 
 void ServerApp::onConnection(std::shared_ptr<Remote> server)
 {
+    // Connection remains open until server goes private
+
     server->setOnReceiving(
         Messages::server_manager_connection_refused,
-        std::bind(onConnectionServerManagerRefused, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(onServerManagerConnectionRefused, this, std::placeholders::_1, std::placeholders::_2)
     );
 
     server->setOnReceiving(
         Messages::server_manager_server_added_to_list,
-        std::bind(onConnectionServerManagerRefused, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(onServerAddedToList, this, std::placeholders::_1, std::placeholders::_2)
     );
+
+    server->setOnReceiving(
+        Messages::server_manager_password_check_request,
+        std::bind(onServerManagerPasswordCheckRequest, this, std::placeholders::_1, std::placeholders::_2)
+    );
+
+    server->setOnReceiving(
+        Messages::server_manager_unaccepted_server_name,
+        std::bind(onServerManagerUnacceptedNameResponse, this, std::placeholders::_1, std::placeholders::_2)
+    );    
+
+    server->setOnReceiving(
+        Messages::server_manager_server_name_already_used,
+        std::bind(onServerManagerNameAlreadyUsedResponse, this, std::placeholders::_1, std::placeholders::_2)
+    );    
+
+    server->setOnReceiving(
+        Messages::server_manager_server_not_found,
+        std::bind(onServerManagerServerNotFoundResponse, this, std::placeholders::_1, std::placeholders::_2)
+    );        
+
+
+    while(server->isConnected())
+    {
+    }
+
+    server->stop();
 }
 
 void ServerApp::onClientConnection(std::shared_ptr<Remote> client)
 {
-    std::println("Client connected");
-
     client->setOnReceiving(
         Messages::client_connection_request,
-        std::bind(onClientConnected, this, std::placeholders::_1, std::placeholders::_2)
-    );
-
-    client->setOnReceiving(
-        Messages::server_manager_connection_request,
         std::bind(onClientConnected, this, std::placeholders::_1, std::placeholders::_2)
     );
 }
@@ -245,20 +290,62 @@ void ServerApp::setupRunningInterface()
 {
 }
 
-void ServerApp::onConnectionServerManagerRefused(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+void ServerApp::onServerManagerConnectionRefused(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
     std::println("Server Manager refused connection!");
 }
 
-void ServerApp::onServerAddedToList(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+void ServerApp::onServerAddedToList(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
+    is_public = true;
+
     std::println("Server successfully added to list!");
 }
 
-void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Messages> &client)
+void ServerApp::onServerManagerServerNotFoundResponse(mdsm::Collection message, nets::TcpRemote<Messages> &server_manager)
+{   
+    is_public = false;
+
+    std::println("Server wasn't found on Server Manager!");
+}
+
+void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Messages>& client)
+{
+    
+
+}
+
+void ServerApp::onServerManagerPasswordCheckRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager)
+{
+    if(message.retrieve<std::string>() != password)
+    {
+        server_manager.send(
+            mdsm::Collection{}
+                << Messages::server_password_check_response
+                << false
+                << message.retrieve<std::string>()
+        );
+    }
+    else 
+    {
+        server_manager.send(
+            mdsm::Collection{}
+                << Messages::server_password_check_response
+                << true
+                << message.retrieve<std::string>()
+        );
+    }
+}
+
+void ServerApp::onServerManagerPlayersCountRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager)
+{
+    server_manager.send(mdsm::Collection{} << Messages::server_players_count_response << players_count.load());
+}
+
+void ServerApp::onServerManagerNameAlreadyUsedResponse(mdsm::Collection message, nets::TcpRemote<Messages> &server_manager)
 {
 }
 
-void ServerApp::onServerManagerConnected(mdsm::Collection message, nets::TcpRemote<Messages> &server_manager)
+void ServerApp::onServerManagerUnacceptedNameResponse(mdsm::Collection message, nets::TcpRemote<Messages> &server_manager)
 {
 }

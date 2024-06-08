@@ -26,17 +26,15 @@ enum class Messages
 
     // Messages sent from server
     server_connection_refused,
-    server_wrong_password,
+    server_password_check_response,
     server_probe,
     server_full,
     server_go_public,
     server_go_private,
-    server_password_response,
     server_players_count_response,
 
     // Messages sent from server manager
     server_manager_connection_refused,
-    server_manager_connection_request,
     server_manager_server_list_response,
     server_manager_server_not_found,
     server_manager_server_full,
@@ -44,7 +42,7 @@ enum class Messages
     server_manager_server_address_response,
     server_manager_server_added_to_list,
     server_manager_probe,
-    server_manager_password_request,
+    server_manager_password_check_request,
     server_manager_server_name_already_used,
     server_manager_unaccepted_server_name,
     server_manager_players_count_request,

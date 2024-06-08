@@ -22,6 +22,9 @@ class ServerApp
 
         virtual void update(const app::Seconds elapsed_seconds) override;
 
+        void goPublic();
+        void goPrivate();
+
         virtual ~ServerApp();
 
     private:
@@ -35,13 +38,24 @@ class ServerApp
         void setupWelcomeInterface();
         void setupRunningInterface();
 
-        void onConnectionServerManagerRefused(mdsm::Collection message, nets::TcpRemote<Messages>& server);
-        void onServerAddedToList             (mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onServerManagerConnectionRefused     (mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
+        void onServerAddedToList                  (mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
+        void onServerManagerServerNotFoundResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
 
-        void onClientConnected       (mdsm::Collection message, nets::TcpRemote<Messages>& client);
-        void onServerManagerConnected(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
+        void onClientConnected(mdsm::Collection message, nets::TcpRemote<Messages>& client);
+        
+        void onServerManagerPasswordCheckRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
+        void onServerManagerPlayersCountRequest (mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
+
+        void onServerManagerNameAlreadyUsedResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
+        void onServerManagerUnacceptedNameResponse (mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
 
         std::shared_ptr<app::Window> main_window;
 
-        bool make_public;
+        bool is_public {false};
+
+        std::string              name;
+        std::string              password;
+        std::atomic<std::size_t> players_count;
+        std::size_t              max_players_count;
 };

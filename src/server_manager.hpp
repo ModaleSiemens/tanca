@@ -35,8 +35,8 @@ class ServerManager : public nets::TcpServer<Messages, Remote>
         void onServerGoPublicRequest    (mdsm::Collection message, nets::TcpRemote<Messages>& server);
         void onServerGoingPrivateRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server);
 
-        void onServerPasswordResponse    (mdsm::Collection message, nets::TcpRemote<Messages>& server);
-        void onServerPlayersCountResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onServerPasswordCheckResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onServerPlayersCountResponse (mdsm::Collection message, nets::TcpRemote<Messages>& server);
 
         std::mutex servers_data_mutex;
 
