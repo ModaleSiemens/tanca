@@ -107,6 +107,7 @@ void ServerApp::onConnection(std::shared_ptr<Remote> server)
 
     while(server->isConnected())
     {
+        
     }
 
     server->stop();
@@ -158,10 +159,10 @@ void ServerApp::setupWelcomeInterface()
     main_window->getWidget<tgui::Button>("start_button")->onClick(
         [&, this]
         {
-            const auto world_name       {main_window->getWidget<tgui::EditBox>("world_name_editbox")->getText().toStdString()};
-            const auto port             {main_window->getWidget<tgui::EditBox>("port_editbox")->getText().toStdString()};
-            const auto password         {main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()};
-            const auto max_player_count {main_window->getWidget<tgui::EditBox>("max_player_count_editbox")->getText().toStdString()};  
+            const auto world_name              {main_window->getWidget<tgui::EditBox>("world_name_editbox")->getText().toStdString()};
+            const auto port                    {main_window->getWidget<tgui::EditBox>("port_editbox")->getText().toStdString()};
+            const auto server_password         {main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()};
+            const auto server_max_player_count {main_window->getWidget<tgui::EditBox>("max_player_count_editbox")->getText().toStdString()};  
 
             const bool world_exists {
                 std::filesystem::exists(std::string{"../data/worlds/"} + world_name) && !world_name.empty()
@@ -265,9 +266,23 @@ void ServerApp::setupWelcomeInterface()
                         setServerAddress(server_manager_address);
                         setServerPort   (server_manager_port);
 
+                        name     = server_name;
+                        password = server_password;
+                        max_players_count = std::stoull(server_max_player_count);
+                        players_count = 0;
+
+                        std::println("{}, {}", server_manager_address, server_manager_port);
+
                         if(connect())
                         {
                             main_window->removeErrorFromWidget("start_button");
+
+                            goPublic();
+
+                            while(server->isConnected())
+                            {
+                                std::println("{}", players_count.load());
+                            }
                         }
                         else 
                         {
@@ -311,8 +326,29 @@ void ServerApp::onServerManagerServerNotFoundResponse(mdsm::Collection message, 
 
 void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Messages>& client)
 {
-    
+    if(!password.empty())
+    {
+        if(message.retrieve<std::string>() != password)
+        {
+            client.send(mdsm::Collection{} << Messages::server_wrong_password);
 
+            client.stop();
+
+            return;
+        }
+    }
+
+    if((players_count.load() + 1) <= max_players_count)
+    {
+        client.send(mdsm::Collection{} << Messages::server_connection_accepted);
+
+        while(client.isConnected())
+        {
+            client.send(mdsm::Collection{} << Messages::server_probe);
+
+            std::this_thread::sleep_for(TcpClient::PingTime{1});
+        }
+    }
 }
 
 void ServerApp::onServerManagerPasswordCheckRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager)

@@ -38,6 +38,8 @@ class ServerManager : public nets::TcpServer<Messages, Remote>
         void onServerPasswordCheckResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server);
         void onServerPlayersCountResponse (mdsm::Collection message, nets::TcpRemote<Messages>& server);
 
+        void updateServersData();
+
         std::mutex servers_data_mutex;
 
         std::unordered_map<std::string, ServerData> servers_data;

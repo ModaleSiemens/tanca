@@ -89,7 +89,7 @@ ListView.servers_listview {
     ResizableColumns = true;
     SeparatorWidth = 1;
     ShowVerticalGridLines = 1;
-    Size = (608, 340);
+    Size = (608, 290);
     TextSize = 20;
 
     Renderer {

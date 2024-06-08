@@ -30,16 +30,21 @@ class ClientApp : public app::Application, private nets::TcpClient<Messages, Rem
         void setupServerManagerPromptInterface();
         void setupByNamePromptInterface();
 
-        void onServerListResponse(mdsm::Collection servers_data, nets::TcpRemote<Messages>& server);
-        void onServerNotFound    (mdsm::Collection message, nets::TcpRemote<Messages>& server);
-        void onServerFull        (mdsm::Collection message, nets::TcpRemote<Messages>& server);
-        void onWrongPassword     (mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onServerListResponse      (mdsm::Collection servers_data, nets::TcpRemote<Messages>& server);
+        void onServerNotFound          (mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onServerFull              (mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onWrongPassword           (mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onServerAcceptedConnection(mdsm::Collection message, nets::TcpRemote<Messages>& server);
+
+        void onServerProbe(mdsm::Collection message, nets::TcpRemote<Messages>& server);
 
         void onServerAddressResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server);
 
         void onConnectionRefused(mdsm::Collection message, nets::TcpRemote<Messages>& server);
 
         void setupConnectedToServerInterface();
+
+        void serverListUpdater();
 
         //bool setBackButton(const std::string interface_path, void (ClientApp::* function)());
         std::shared_ptr<tgui::Button> getBackButton();

@@ -60,29 +60,7 @@ void ServerManager::onClientConnection(std::shared_ptr<Remote> client)
     client->setOnReceiving(
         Messages::server_password_check_response,
         std::bind(onServerPasswordCheckResponse, this, std::placeholders::_1, std::placeholders::_2)
-    );    
-
-
-
-    bool is_server {false};
-
-    for(const auto&[name, data] : servers_data)
-    {
-        if(data.address == client->getAddress())
-        {
-            is_server = true;
-        }
-    }
-
-    while(client->isConnected())
-    {
-        if(is_server)
-        {
-            client->send(mdsm::Collection{} << Messages::server_manager_players_count_request);
-        }
-
-        std::this_thread::sleep_for(PingTime{1});
-    } 
+    );        
 
     closeConnection(client);
 }
@@ -94,9 +72,13 @@ void ServerManager::onForbiddenClientConnection(std::shared_ptr<Remote> client)
 
 void ServerManager::onClientServerListRequest(mdsm::Collection message, nets::TcpRemote<Messages>& client)
 {
+    updateServersData();
+
     std::lock_guard lock_guard {servers_data_mutex};
 
     mdsm::Collection servers_data_message;
+
+    servers_data_message << Messages::server_manager_server_list_response;
 
     for(const auto&[name, data] : servers_data)
     {
@@ -152,24 +134,34 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
 
 void ServerManager::onServerGoPublicRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
+    std::println("GOING PUBLIC REQUEST2");
+
     std::lock_guard lock_guard {servers_data_mutex};
 
     const auto server_name {message.retrieve<std::string>()};
 
+    std::println("GOING PUBLIC REQUEST2");
+
     if(server_name.empty())
     {
+        std::println("NAME IS EMPTY");
+
         server.send(mdsm::Collection{} << Messages::server_manager_unaccepted_server_name);
 
         server.stop();
     }
     else if(servers_data.contains(server_name))
     {
+        std::println("SERVER ALREADY EXISTS");
+
         server.send(mdsm::Collection{} << Messages::server_manager_server_name_already_used);
 
         server.stop();        
     }
     else 
     {
+        std::println("SERVER ADDED");
+
         servers_data[server_name] = ServerData{
             server.getAddress(),
             message.retrieve<bool>(),
@@ -255,5 +247,27 @@ void ServerManager::onServerPlayersCountResponse(mdsm::Collection message, nets:
     else 
     {
         servers_data[*server_name].player_count = message.retrieve<std::size_t>();
+    }
+}
+
+void ServerManager::updateServersData()
+{
+    for(auto&[name, data] : servers_data)
+    {
+        if(
+            auto server_iter {
+                std::ranges::find_if(
+                    getClients(),
+                    [&, this](const std::shared_ptr<nets::TcpRemote<Messages>> remote)
+                    {
+                        return remote->isConnected() && remote->getAddress() == data.address;
+                    }
+                )
+            };
+            server_iter != getClients().end()
+        )
+        {
+            (*server_iter)->send(mdsm::Collection{} << Messages::server_manager_players_count_request);
+        }
     }
 }

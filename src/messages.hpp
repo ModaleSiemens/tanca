@@ -32,6 +32,8 @@ enum class Messages
     server_go_public,
     server_go_private,
     server_players_count_response,
+    server_connection_accepted,
+    server_wrong_password,
 
     // Messages sent from server manager
     server_manager_connection_refused,

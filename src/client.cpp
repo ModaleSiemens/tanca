@@ -30,6 +30,10 @@ ClientApp::ClientApp()
 
     main_window = getWindow("main");
 
+    std::thread {
+        serverListUpdater, this
+    }.detach();
+
     setupWelcomeInterface();
 }
 
@@ -40,7 +44,10 @@ void ClientApp::update(const app::Seconds elapsed_seconds)
 
 void ClientApp::onConnection(std::shared_ptr<Remote> server)
 {
+    while(server->isConnected())
+    {
 
+    }
 }
 
 void ClientApp::setupMessageCallbacks()
@@ -73,7 +80,17 @@ void ClientApp::setupMessageCallbacks()
     server->setOnReceiving(
         Messages::server_manager_server_address_response,
         std::bind(onServerAddressResponse, this, std::placeholders::_1, std::placeholders::_2)
-    );    
+    );   
+
+    server->setOnReceiving(
+        Messages::server_connection_accepted,
+        std::bind(onServerAcceptedConnection, this, std::placeholders::_1, std::placeholders::_2)
+    );     
+
+    server->setOnReceiving(
+        Messages::server_probe,
+        std::bind(onServerProbe, this, std::placeholders::_1, std::placeholders::_2)
+    );       
 }
 
 void ClientApp::setupWelcomeInterface()
@@ -211,33 +228,6 @@ void ClientApp::setupByNamePromptInterface()
             }
         }
     );
-
-    while(main_window->getWidget("servers_listview") != nullptr)
-    {
-        if(status.load() == Status::connected_to_server_manager)
-        {
-            server->send(mdsm::Collection{} << Messages::client_server_list_request);
-
-            auto server_listview {main_window->getWidget<tgui::ListView>("servers_listview")};
-
-            std::lock_guard<std::mutex> lock_guard {internal_server_list_mutex};
-
-            for(const auto& server_data : internal_server_list)
-            {
-                server_listview->addItem(
-                    std::vector<tgui::String>
-                    {
-                        server_data.name,
-                        server_data.password_required ? "Yes" : "No",
-                        std::to_string(server_data.players_count),
-                        server_data.max_player_count > 0 ? std::to_string(server_data.max_player_count) : "No limit"
-                    }
-                );
-            }
-
-            std::this_thread::sleep_for(PingTime{1.0});
-        }
-    }
 }
 
 void ClientApp::onServerListResponse(mdsm::Collection servers_data, nets::TcpRemote<Messages> &server)
@@ -286,6 +276,16 @@ void ClientApp::onWrongPassword(mdsm::Collection message, nets::TcpRemote<Messag
     );
 }
 
+void ClientApp::onServerAcceptedConnection(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+{
+    std::println("Successfully connected to server");
+}
+
+void ClientApp::onServerProbe(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+{
+    std::println("Server probed!");
+}
+
 void ClientApp::onConnectionRefused(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
     main_window->addErrorToWidget(
@@ -301,8 +301,41 @@ void ClientApp::setupConnectedToServerInterface()
     main_window->loadWidgetsFromFile("../assets/interfaces/client_connected");
 }
 
+void ClientApp::serverListUpdater()
+{
+    while(true)
+    {
+        if(main_window->getWidget("servers_listview") != nullptr && status.load() == Status::connected_to_server_manager)
+        {
+            server->send(mdsm::Collection{} << Messages::client_server_list_request);
+
+            auto server_listview {main_window->getWidget<tgui::ListView>("servers_listview")};
+
+            std::lock_guard<std::mutex> lock_guard {internal_server_list_mutex};
+
+            server_listview->removeAllItems();
+
+            for(const auto& server_data : internal_server_list)
+            {   
+                server_listview->addItem(
+                    std::vector<tgui::String>
+                    {
+                        server_data.name,
+                        server_data.password_required ? "Yes" : "No",
+                        std::to_string(server_data.players_count),
+                        server_data.max_player_count > 0 ? std::to_string(server_data.max_player_count) : "No limit"
+                    }
+                );
+            }
+        }
+
+        std::this_thread::sleep_for(PingTime{1.0});    
+    }
+}
+
 void ClientApp::onServerAddressResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
+    // Disconnect from server manager
     disconnect();
 
     status = Status::not_connected;
@@ -314,7 +347,9 @@ void ClientApp::onServerAddressResponse(mdsm::Collection message, nets::TcpRemot
     {
         status = Status::connected_to_server;
 
-        setupConnectedToServerInterface();
+        server.send(
+            mdsm::Collection{} << Messages::client_connection_request << main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()
+        );
     }
     else
     {
