@@ -271,21 +271,14 @@ void ServerApp::setupWelcomeInterface()
 
                         name     = server_name;
                         password = server_password;
-                        max_players_count = std::stoull(server_max_player_count);
+                        max_players_count = server_max_player_count == "" ? 0 : std::stoull(server_max_player_count);
                         players_count = 0;
 
                         std::println("{}, {}", server_manager_address, server_manager_port);
 
                         if(connect())
                         {
-                            main_window->removeErrorFromWidget("start_button");
-
-                            while(server->isConnected())
-                            {
-                                std::println("{}", players_count.load());
-
-                                std::this_thread::sleep_for(TcpServer::PingTime{1});
-                            }
+                            std::println("Connected");
                         }
                         else 
                         {

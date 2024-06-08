@@ -20,6 +20,8 @@ int main()
 }
 
 ClientApp::ClientApp()
+:
+    app::Application{}
 {
     setupMessageCallbacks();
 
@@ -29,7 +31,8 @@ ClientApp::ClientApp()
         true,
         "../assets/interfaces/client1.txt",
         sf::VideoMode(800, 600),
-        "Welcome to tanca!"
+        "Tanclient!",
+        sf::Style::Close
     );
 
     main_window = getWindow("main");
