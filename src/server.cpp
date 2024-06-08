@@ -55,6 +55,8 @@ void ServerApp::goPublic()
                 << players_count.load()
                 << max_players_count
         );
+
+        std::println("Sent go_public");
     }
 }
 
@@ -104,6 +106,7 @@ void ServerApp::onConnection(std::shared_ptr<Remote> server)
         std::bind(onServerManagerServerNotFoundResponse, this, std::placeholders::_1, std::placeholders::_2)
     );        
 
+    goPublic();
 
     while(server->isConnected())
     {
@@ -277,11 +280,11 @@ void ServerApp::setupWelcomeInterface()
                         {
                             main_window->removeErrorFromWidget("start_button");
 
-                            goPublic();
-
                             while(server->isConnected())
                             {
                                 std::println("{}", players_count.load());
+
+                                std::this_thread::sleep_for(TcpServer::PingTime{1});
                             }
                         }
                         else 

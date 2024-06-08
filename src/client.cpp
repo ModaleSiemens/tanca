@@ -3,13 +3,17 @@
 
 #include <print>
 
+#include <chrono>
+
+using namespace std::chrono_literals;
+
 int main()
 {
     ClientApp client_app;
 
     while(true)
     {
-        client_app.update({});
+        client_app.update(50ms);
     }
 
     return 0;
@@ -213,7 +217,7 @@ void ClientApp::setupByNamePromptInterface()
                 // Sending request to SERVER MANAGER
                 server->send(
                     mdsm::Collection{}
-                        << Messages::client_connection_request
+                        << Messages::client_server_address_request
                         << name
                         << main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()
                 );
@@ -329,7 +333,7 @@ void ClientApp::serverListUpdater()
             }
         }
 
-        std::this_thread::sleep_for(PingTime{1.0});    
+        std::this_thread::sleep_for(PingTime{2.0});    
     }
 }
 
