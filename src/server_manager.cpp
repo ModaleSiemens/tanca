@@ -9,7 +9,7 @@ int main()
 {
     ServerManager server_manager;
 
-    nets::Port port;
+    std::string port;
 
     do
     {
@@ -19,7 +19,7 @@ int main()
     while(!isValidPort(port));
 
     server_manager.setIpVersion(nets::IPVersion::ipv4);
-    server_manager.setPort(port);
+    server_manager.setPort(std::stoull(port));
 
     server_manager.startAccepting();
 

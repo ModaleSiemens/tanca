@@ -51,6 +51,13 @@ void ClientApp::update(const app::Seconds elapsed_seconds)
 
 void ClientApp::onConnection(std::shared_ptr<Remote> server)
 {
+    if(status == Status::connected_to_server)
+    {
+        server->send(
+            mdsm::Collection{} << Messages::client_connection_request << main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()
+        );
+    }
+
     while(server->isConnected())
     {
     }
@@ -72,6 +79,11 @@ void ClientApp::setupMessageCallbacks()
         Messages::server_full,
         std::bind(onServerFull, this, std::placeholders::_1, std::placeholders::_2)
     );    
+
+    server->setOnReceiving(
+        Messages::server_wrong_password,
+        std::bind(onServerWrongPassword, this, std::placeholders::_1, std::placeholders::_2)
+    );       
 
     server->setOnReceiving(
         Messages::server_manager_wrong_password,
@@ -282,9 +294,18 @@ void ClientApp::onWrongPassword(mdsm::Collection message, nets::TcpRemote<Messag
     );
 }
 
+void ClientApp::onServerWrongPassword(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+{
+    main_window->addErrorToWidget(
+        "connect_button",
+        "<color=white>Password is wrong!</color>",
+        25
+    );
+}
+
 void ClientApp::onServerAcceptedConnection(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
-    std::println("Successfully connected to server");
+    setupConnectedToServerInterface();
 }
 
 void ClientApp::onServerProbe(mdsm::Collection message, nets::TcpRemote<Messages> &server)
@@ -304,7 +325,7 @@ void ClientApp::onConnectionRefused(mdsm::Collection message, nets::TcpRemote<Me
 void ClientApp::setupConnectedToServerInterface()
 {
     main_window->setTitle("Get ready to play!");
-    main_window->loadWidgetsFromFile("../assets/interfaces/client_connected");
+    main_window->loadWidgetsFromFile("../assets/interfaces/client/connected.txt");
 }
 
 void ClientApp::serverListUpdater()
@@ -356,10 +377,6 @@ void ClientApp::onServerAddressResponse(mdsm::Collection message, nets::TcpRemot
         std::println("CONNECTED TO SERVER");
 
         status = Status::connected_to_server;
-
-        server.send(
-            mdsm::Collection{} << Messages::client_connection_request << main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()
-        );
     }
     else
     {
@@ -392,5 +409,5 @@ std::shared_ptr<tgui::Button> ClientApp::getBackButton()
 
 ClientApp::~ClientApp()
 {
-
+    disconnect();
 }

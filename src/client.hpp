@@ -34,6 +34,7 @@ class ClientApp : public app::Application, private nets::TcpClient<Messages, Rem
         void onServerNotFound          (mdsm::Collection message, nets::TcpRemote<Messages>& server);
         void onServerFull              (mdsm::Collection message, nets::TcpRemote<Messages>& server);
         void onWrongPassword           (mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onServerWrongPassword     (mdsm::Collection message, nets::TcpRemote<Messages>& server);
         void onServerAcceptedConnection(mdsm::Collection message, nets::TcpRemote<Messages>& server);
 
         void onServerProbe(mdsm::Collection message, nets::TcpRemote<Messages>& server);

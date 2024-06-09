@@ -1,0 +1,26 @@
+ChatBox.chatbox {
+    LinesStartFromTop = false;
+    NewLinesBelowOthers = true;
+    Position = (520, 10);
+    Size = (270, 124);
+    TextColor = black;
+    TextSize = 13;
+
+    Renderer {
+        BackgroundColor = #F5F5F5;
+        BorderColor = black;
+        Borders = (1, 1, 1, 1);
+        Padding = (0, 0, 0, 0);
+        TextureBackground = None;
+
+        Scrollbar {
+            ArrowBackgroundColor = #F5F5F5;
+            ArrowBackgroundColorHover = white;
+            ArrowColor = #3C3C3C;
+            ArrowColorHover = black;
+            ThumbColor = #DCDCDC;
+            ThumbColorHover = #E6E6E6;
+            TrackColor = #F5F5F5;
+        }
+    }
+}
