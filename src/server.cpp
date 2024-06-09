@@ -342,30 +342,13 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
 
 void ServerApp::onServerManagerPasswordCheckRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager)
 {
-    std::println("PASSWORD CHECK!");
-
-    if(message.retrieve<std::string>() != password)
-    {
-        std::println("WRONG PASSWORD");
-
-        server_manager.send(
-            mdsm::Collection{}
-                << Messages::server_password_check_response
-                << false
-                << message.retrieve<std::string>()
-        );
-    }
-    else 
-    {
-        std::println("RIGHT PASSWORD");
-
-        server_manager.send(
-            mdsm::Collection{}
-                << Messages::server_password_check_response
-                << true
-                << message.retrieve<std::string>()
-        );
-    }
+    server_manager.send(
+        mdsm::Collection{}
+            << Messages::server_password_check_response
+            << (message.retrieve<std::string>() == password)
+            << message.retrieve<std::string>()
+            << message.retrieve<std::string>()
+    );
 }
 
 void ServerApp::onServerManagerPlayersCountRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager)

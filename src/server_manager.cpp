@@ -139,6 +139,7 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
                 << Messages::server_manager_password_check_request
                 << password
                 << client.getAddress()
+                << std::to_string(client.getPort())
         );
     }
     else 
@@ -214,25 +215,39 @@ void ServerManager::onServerPasswordCheckResponse(mdsm::Collection message, nets
 {
     const auto password_was_right {message.retrieve<bool>()};
     const auto client_address     {message.retrieve<std::string>()};
+    const auto client_port        {message.retrieve<std::string>()};
 
-    const auto client_iter {
+    auto client_iter {
         std::ranges::find_if(
             getClients(),
             [&, this](const std::shared_ptr<Remote> client)
             {
-                return client->getAddress() == client_address;
+                return
+                    client->getAddress() == client_address
+                    &&
+                    std::to_string(client->getPort()) == client_port
+                ;
             }
         )
     };
 
     if(client_iter != getClients().end())
     {
-        (*client_iter)->send(
-            mdsm::Collection{}
-                << Messages::server_manager_server_address_response
-                << server.getAddress()
-                << std::to_string(server.getPort())
-        );
+        if(!password_was_right)
+        {
+            (*client_iter)->send(
+                mdsm::Collection{} << Messages::server_manager_wrong_password
+            );    
+        }
+        else 
+        {
+            (*client_iter)->send(
+                mdsm::Collection{}
+                    << Messages::server_manager_server_address_response
+                    << server.getAddress()
+                    << std::to_string(server.getPort())
+            );
+        }
     }
 }
 
