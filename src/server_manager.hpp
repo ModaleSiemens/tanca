@@ -18,6 +18,7 @@ class ServerManager : public nets::TcpServer<Messages, Remote>
         struct ServerData
         {
             std::string address;
+            std::string port;
             bool        requires_password;
             std::size_t player_count;
             std::size_t max_player_count;

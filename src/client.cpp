@@ -350,8 +350,12 @@ void ClientApp::onServerAddressResponse(mdsm::Collection message, nets::TcpRemot
     setServerAddress(message.retrieve<std::string>());
     setServerPort   (message.retrieve<std::string>());
 
+    std::println("{}:{}", getServerAddress(), getServerPort());
+
     if(connect())
     {
+        std::println("CONNECTED TO SERVER");
+
         status = Status::connected_to_server;
 
         server.send(
@@ -360,6 +364,8 @@ void ClientApp::onServerAddressResponse(mdsm::Collection message, nets::TcpRemot
     }
     else
     {
+        std::println("FAILED TO CONNECT TO SERVER");
+
         main_window->addErrorToWidget(
             "connect_button",
             std::string{"<color=white>Failed to connect to server!\n</color>"} + message.retrieve<std::string>(),

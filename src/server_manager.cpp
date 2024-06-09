@@ -62,6 +62,11 @@ void ServerManager::onClientConnection(std::shared_ptr<Remote> client)
         std::bind(onServerPasswordCheckResponse, this, std::placeholders::_1, std::placeholders::_2)
     );        
 
+    client->onFailedSending = [&, this](mdsm::Collection data)
+    {
+        std::println("ERROR SENDING");
+    };
+
     while(client->isConnected())
     {
 
@@ -105,25 +110,34 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
     const auto server_name {message.retrieve<std::string>()};
     const auto password    {message.retrieve<std::string>()};
 
+    std::println("Client asked for server - {}:{}", server_name, password);
+
     if(!servers_data.contains(server_name))
     {
         client.send(mdsm::Collection{} << Messages::server_manager_server_not_found);
     }
     else if(servers_data[server_name].requires_password)
     {
-        const auto server_iter {
+        auto server_iter {
             std::ranges::find_if(
                 getClients(),
                 [&, this](const std::shared_ptr<Remote> server)
                 {
-                    return server->getAddress() == servers_data[server_name].address;
+                    return
+                        server->getAddress() == servers_data[server_name].address
+                        &&
+                        std::to_string(server->getPort()) == servers_data[server_name].port
+                    ;
                 }
             )
         };
 
+        std::println("{}", server_iter != getClients().end());
+
         (*server_iter)->send(
             mdsm::Collection{}
                 << Messages::server_manager_password_check_request
+                << password
                 << client.getAddress()
         );
     }
@@ -133,6 +147,7 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
             mdsm::Collection{}
                 << Messages::server_manager_server_address_response
                 << servers_data[server_name].address
+                << servers_data[server_name].port
         );
     }
 }
@@ -159,6 +174,7 @@ void ServerManager::onServerGoPublicRequest(mdsm::Collection message, nets::TcpR
     {
         servers_data[server_name] = ServerData{
             server.getAddress(),
+            std::to_string(server.getPort()),
             message.retrieve<bool>(),
             message.retrieve<std::size_t>(),
             message.retrieve<std::size_t>()
@@ -215,6 +231,7 @@ void ServerManager::onServerPasswordCheckResponse(mdsm::Collection message, nets
             mdsm::Collection{}
                 << Messages::server_manager_server_address_response
                 << server.getAddress()
+                << std::to_string(server.getPort())
         );
     }
 }
@@ -249,12 +266,8 @@ void ServerManager::onServerPlayersCountResponse(mdsm::Collection message, nets:
 
 void ServerManager::updateServersData()
 {
-    std::println("updateServersData");
-
     for(auto&[name, data] : servers_data)
     {
-        std::println("Inside UpdateServerData for loop");
-
         if(
             auto server_iter {
                 std::ranges::find_if(

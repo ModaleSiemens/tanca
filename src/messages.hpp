@@ -44,7 +44,7 @@ enum class Messages
     server_manager_server_address_response,
     server_manager_server_added_to_list,
     server_manager_probe,
-    server_manager_password_check_request,
+    server_manager_password_check_request = 99,
     server_manager_server_name_already_used,
     server_manager_unaccepted_server_name,
     server_manager_players_count_request,

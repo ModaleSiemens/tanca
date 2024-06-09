@@ -4,6 +4,9 @@
 
 #include <filesystem>
 #include <thread>
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 int main()
 {
@@ -19,12 +22,8 @@ int main()
 
 ServerApp::ServerApp()
 :
-    TcpServer{
-        
-    }
+    TcpServer{}
 {
-    setupMessageCallbacks();
-
     addWindow(
         "main",
         true,
@@ -107,13 +106,6 @@ void ServerApp::onConnection(std::shared_ptr<Remote> server)
     );        
 
     goPublic();
-
-    while(server->isConnected())
-    {
-        
-    }
-
-    server->stop();
 }
 
 void ServerApp::onClientConnection(std::shared_ptr<Remote> client)
@@ -127,10 +119,6 @@ void ServerApp::onClientConnection(std::shared_ptr<Remote> client)
 void ServerApp::onForbiddenClientConnection(std::shared_ptr<Remote> client)
 {
     std::println("Client forbiddenly connected!");
-}
-
-void ServerApp::setupMessageCallbacks()
-{
 }
 
 void ServerApp::setupWelcomeInterface()
@@ -201,7 +189,12 @@ void ServerApp::setupWelcomeInterface()
 
             if(world_exists && !port.empty())
             {
-                setupRunningInterface();
+                //setupRunningInterface();
+
+                setIpVersion(nets::IPVersion::ipv4);
+                setPort(std::stoull(port));
+
+                startAccepting();
 
                 if(main_window->getWidget<tgui::CheckBox>("make_public_checkbox")->isChecked())
                 {
@@ -325,7 +318,7 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
     if(!password.empty())
     {
         if(message.retrieve<std::string>() != password)
-        {
+        {   
             client.send(mdsm::Collection{} << Messages::server_wrong_password);
 
             client.stop();
@@ -334,7 +327,7 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
         }
     }
 
-    if((players_count.load() + 1) <= max_players_count)
+    if((players_count.load() + 1) <= max_players_count || players_count.load() <= 0)
     {
         client.send(mdsm::Collection{} << Messages::server_connection_accepted);
 
@@ -349,8 +342,12 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
 
 void ServerApp::onServerManagerPasswordCheckRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager)
 {
+    std::println("PASSWORD CHECK!");
+
     if(message.retrieve<std::string>() != password)
     {
+        std::println("WRONG PASSWORD");
+
         server_manager.send(
             mdsm::Collection{}
                 << Messages::server_password_check_response
@@ -360,6 +357,8 @@ void ServerApp::onServerManagerPasswordCheckRequest(mdsm::Collection message, ne
     }
     else 
     {
+        std::println("RIGHT PASSWORD");
+
         server_manager.send(
             mdsm::Collection{}
                 << Messages::server_password_check_response
