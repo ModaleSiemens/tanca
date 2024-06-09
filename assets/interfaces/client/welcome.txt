@@ -26,7 +26,7 @@ Picture.background_image {
     Size = (1533, 1027);
 
     Renderer {
-        Texture = "../images/client_back1.png" Smooth;
+        Texture = "../../images/client/back1.png" Smooth;
         TransparentTexture = true;
     }
 }

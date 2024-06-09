@@ -29,7 +29,7 @@ ClientApp::ClientApp()
     addWindow(
         "main",
         true,
-        "../assets/interfaces/client1.txt",
+        "../assets/interfaces/client/welcome.txt",
         sf::VideoMode(800, 600),
         "Tanclient!",
         sf::Style::Close
@@ -53,7 +53,6 @@ void ClientApp::onConnection(std::shared_ptr<Remote> server)
 {
     while(server->isConnected())
     {
-
     }
 }
 
@@ -102,7 +101,7 @@ void ClientApp::setupMessageCallbacks()
 
 void ClientApp::setupWelcomeInterface()
 {   
-    main_window->loadWidgetsFromFile("../assets/interfaces/client1.txt");
+    main_window->loadWidgetsFromFile("../assets/interfaces/client/welcome.txt");
 
     main_window->getWidget<tgui::Button>("by_name_button")->onClick(
         [&, this]
@@ -115,7 +114,7 @@ void ClientApp::setupWelcomeInterface()
 void ClientApp::setupServerManagerPromptInterface()
 {
     main_window->setTitle("Enter server manager data!");
-    main_window->loadWidgetsFromFile("../assets/interfaces/client_server_manager.txt");
+    main_window->loadWidgetsFromFile("../assets/interfaces/client/server_manager.txt");
 
     getBackButton()->onClick(
         [&, this]
@@ -198,7 +197,7 @@ void ClientApp::setupServerManagerPromptInterface()
 void ClientApp::setupByNamePromptInterface()
 {
     main_window->setTitle("Insert server data!");
-    main_window->loadWidgetsFromFile("../assets/interfaces/client_by_name.txt"); 
+    main_window->loadWidgetsFromFile("../assets/interfaces/client/servers_list.txt"); 
 
     getBackButton()->onClick(
         [&, this]
@@ -368,7 +367,7 @@ void ClientApp::onServerAddressResponse(mdsm::Collection message, nets::TcpRemot
 
         main_window->addErrorToWidget(
             "connect_button",
-            std::string{"<color=white>Failed to connect to server!\n</color>"} + message.retrieve<std::string>(),
+            std::string{"<color=white>Failed to connect to server!\n</color>"},
             25
         );
 

@@ -49,7 +49,7 @@ Picture.background_image {
     Size = (1224, 911);
 
     Renderer {
-        Texture = "../images/client_by_name.png" Smooth;
+        Texture = "../../images/client/by_name.png" Smooth;
         TransparentTexture = false;
     }
 }

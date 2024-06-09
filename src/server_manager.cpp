@@ -64,7 +64,7 @@ void ServerManager::onClientConnection(std::shared_ptr<Remote> client)
 
     client->onFailedSending = [&, this](mdsm::Collection data)
     {
-        std::println("ERROR SENDING");
+        std::println("Error sending message.");
     };
 
     while(client->isConnected())
@@ -72,7 +72,15 @@ void ServerManager::onClientConnection(std::shared_ptr<Remote> client)
 
     }
 
-    closeConnection(client);
+    if(
+        const auto server_name {getServerNameByEndpoint(client->getAddress(), client->getPort())};
+        server_name
+    )
+    {
+        servers_data.erase(*server_name);
+
+        closeConnection(client);
+    }
 }
 
 void ServerManager::onForbiddenClientConnection(std::shared_ptr<Remote> client)
@@ -215,7 +223,8 @@ void ServerManager::onServerPasswordCheckResponse(mdsm::Collection message, nets
 {
     const auto password_was_right {message.retrieve<bool>()};
     const auto client_address     {message.retrieve<std::string>()};
-    const auto client_port        {message.retrieve<std::string>()};
+    const auto client_port        {message.retrieve<std::string>()};    
+    const auto server_port        {message.retrieve<std::string>()};
 
     auto client_iter {
         std::ranges::find_if(
@@ -245,7 +254,7 @@ void ServerManager::onServerPasswordCheckResponse(mdsm::Collection message, nets
                 mdsm::Collection{}
                     << Messages::server_manager_server_address_response
                     << server.getAddress()
-                    << std::to_string(server.getPort())
+                    << server_port
             );
         }
     }
@@ -299,4 +308,38 @@ void ServerManager::updateServersData()
             (*server_iter)->send(mdsm::Collection{} << Messages::server_manager_players_count_request);
         }
     }
+}
+
+bool ServerManager::isClient(const std::string_view address, const nets::Port port)
+{
+    return !isServer(address, port);
+}
+
+bool ServerManager::isServer(const std::string_view address, const nets::Port port)
+{
+    bool is_server {false};
+
+    for(const auto&[name, data] : servers_data)
+    {
+        if(data.address == address && std::stoull(data.port) == port)
+        {
+            is_server = true;
+            break;
+        }
+    }
+
+    return is_server;
+}
+
+std::optional<std::string> ServerManager::getServerNameByEndpoint(const std::string_view address, const nets::Port port)
+{
+    for(const auto&[name, data] : servers_data)
+    {
+        if(data.address == address && std::stoull(data.port) == port)
+        {
+            return name;
+        }
+    }
+
+    return std::nullopt;
 }

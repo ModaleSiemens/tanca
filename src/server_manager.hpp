@@ -41,6 +41,11 @@ class ServerManager : public nets::TcpServer<Messages, Remote>
 
         void updateServersData();
 
+        bool isClient(const std::string_view address, const nets::Port port);
+        bool isServer(const std::string_view address, const nets::Port port);
+
+        std::optional<std::string> getServerNameByEndpoint(const std::string_view address, const nets::Port port);
+
         std::mutex servers_data_mutex;
 
         std::unordered_map<std::string, ServerData> servers_data;

@@ -27,7 +27,7 @@ ServerApp::ServerApp()
     addWindow(
         "main",
         true,
-        "../assets/interfaces/server1.txt",
+        "../assets/interfaces/server/setup.txt",
         sf::VideoMode(800, 600),
         "Welcome to tanca!"
     );
@@ -54,8 +54,6 @@ void ServerApp::goPublic()
                 << players_count.load()
                 << max_players_count
         );
-
-        std::println("Sent go_public");
     }
 }
 
@@ -123,7 +121,7 @@ void ServerApp::onForbiddenClientConnection(std::shared_ptr<Remote> client)
 
 void ServerApp::setupWelcomeInterface()
 {
-    main_window->loadWidgetsFromFile("../assets/interfaces/server1.txt");
+    main_window->loadWidgetsFromFile("../assets/interfaces/server/setup.txt");
 
     main_window->getWidget<tgui::CheckBox>("make_public_checkbox")->onCheck(
         [&, this]
@@ -302,8 +300,6 @@ void ServerApp::onServerManagerConnectionRefused(mdsm::Collection message, nets:
 void ServerApp::onServerAddedToList(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
     is_public = true;
-
-    std::println("Server successfully added to list!");
 }
 
 void ServerApp::onServerManagerServerNotFoundResponse(mdsm::Collection message, nets::TcpRemote<Messages> &server_manager)
@@ -327,16 +323,26 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
         }
     }
 
-    if((players_count.load() + 1) <= max_players_count || players_count.load() <= 0)
+    if((players_count.load() + 1) <= max_players_count || max_players_count <= 0)
     {
         client.send(mdsm::Collection{} << Messages::server_connection_accepted);
 
         while(client.isConnected())
         {
+            std::println("Probing client...");
+
             client.send(mdsm::Collection{} << Messages::server_probe);
 
             std::this_thread::sleep_for(TcpClient::PingTime{1});
         }
+    }
+    else 
+    {
+        client.send(mdsm::Collection{} << Messages::server_full);
+
+        client.stop();
+
+        return;
     }
 }
 
@@ -348,6 +354,7 @@ void ServerApp::onServerManagerPasswordCheckRequest(mdsm::Collection message, ne
             << (message.retrieve<std::string>() == password)
             << message.retrieve<std::string>()
             << message.retrieve<std::string>()
+            << std::to_string(getPort())
     );
 }
 
