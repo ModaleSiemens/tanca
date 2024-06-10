@@ -46,12 +46,17 @@ ClientApp::ClientApp()
 
 void ClientApp::update(const app::Seconds elapsed_seconds)
 {
+    if(status == Status::connected_to_server && !main_window->getWidget("chatbox"))
+    {
+        setupConnectedToServerInterface(); 
+    }
+
     Application::update(elapsed_seconds);
 }
 
 void ClientApp::onConnection(std::shared_ptr<Remote> server)
 {
-    if(status == Status::connected_to_server)
+    if(status == Status::connecting_to_server)
     {
         server->send(
             mdsm::Collection{} << Messages::client_connection_request << main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()
@@ -305,7 +310,7 @@ void ClientApp::onServerWrongPassword(mdsm::Collection message, nets::TcpRemote<
 
 void ClientApp::onServerAcceptedConnection(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
-    setupConnectedToServerInterface();
+    status = Status::connected_to_server;
 }
 
 void ClientApp::onServerProbe(mdsm::Collection message, nets::TcpRemote<Messages> &server)
@@ -370,18 +375,14 @@ void ClientApp::onServerAddressResponse(mdsm::Collection message, nets::TcpRemot
     setServerAddress(message.retrieve<std::string>());
     setServerPort   (message.retrieve<std::string>());
 
-    std::println("{}:{}", getServerAddress(), getServerPort());
+    status = Status::connecting_to_server;
 
     if(connect())
     {
-        std::println("CONNECTED TO SERVER");
-
-        status = Status::connected_to_server;
+        // Connected to server
     }
     else
     {
-        std::println("FAILED TO CONNECT TO SERVER");
-
         main_window->addErrorToWidget(
             "connect_button",
             std::string{"<color=white>Failed to connect to server!\n</color>"},

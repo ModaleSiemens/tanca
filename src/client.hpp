@@ -56,12 +56,14 @@ class ClientApp : public app::Application, private nets::TcpClient<Messages, Rem
         {
             not_connected,
             connected_to_server_manager,
-            connected_to_server
+            connected_to_server,
+            connecting_to_server
         };
 
         std::atomic<Status> status;
 
         std::mutex internal_server_list_mutex;
+        std::mutex inteface_mutex;
 
         std::vector<ServerData> internal_server_list;
         
