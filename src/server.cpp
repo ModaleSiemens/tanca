@@ -101,6 +101,11 @@ void ServerApp::onConnection(std::shared_ptr<Remote> server)
     server->setOnReceiving(
         Messages::server_manager_server_not_found,
         std::bind(onServerManagerServerNotFoundResponse, this, std::placeholders::_1, std::placeholders::_2)
+    );       
+
+    server->setOnReceiving(
+        Messages::server_manager_players_count_request,
+        std::bind(onServerManagerPlayersCountRequest, this, std::placeholders::_1, std::placeholders::_2)
     );        
 
     goPublic();
@@ -112,17 +117,6 @@ void ServerApp::onClientConnection(std::shared_ptr<Remote> client)
         Messages::client_connection_request,
         std::bind(onClientConnected, this, std::placeholders::_1, std::placeholders::_2)
     );
-
-    while(client->isConnected())
-    {
-        std::println("Probing client...");
-
-        client->send(mdsm::Collection{} << Messages::server_probe);
-
-        std::this_thread::sleep_for(TcpClient::PingTime{1});
-    }
-
-    std::println("Client disconnected");
 }
 
 void ServerApp::onForbiddenClientConnection(std::shared_ptr<Remote> client)
@@ -336,11 +330,28 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
 
     if((players_count.load() + 1) <= max_players_count || max_players_count <= 0)
     {
+        ++players_count;
+
         client.send(mdsm::Collection{} << Messages::server_connection_accepted);
+
+        while(client.isConnected())
+        {
+            std::println("Probing client...");
+
+            client.send(mdsm::Collection{} << Messages::server_probe);
+
+            std::this_thread::sleep_for(TcpClient::PingTime{1});
+        }
+
+        --players_count;
+
+        std::println("Client disconnected");
     }
     else 
     {
         client.send(mdsm::Collection{} << Messages::server_full);
+
+        std::println("Server full");
 
         client.stop();
 

@@ -60,7 +60,12 @@ void ServerManager::onClientConnection(std::shared_ptr<Remote> client)
     client->setOnReceiving(
         Messages::server_password_check_response,
         std::bind(onServerPasswordCheckResponse, this, std::placeholders::_1, std::placeholders::_2)
-    );        
+    );     
+
+    client->setOnReceiving(
+        Messages::server_players_count_response,
+        std::bind(onServerPlayersCountResponse, this, std::placeholders::_1, std::placeholders::_2)
+    );               
 
     client->onFailedSending = [&, this](mdsm::Collection data)
     {
@@ -290,22 +295,16 @@ void ServerManager::onServerPlayersCountResponse(mdsm::Collection message, nets:
 
 void ServerManager::updateServersData()
 {
+    std::lock_guard lock_guard {servers_data_mutex};
+
     for(auto&[name, data] : servers_data)
     {
         if(
-            auto server_iter {
-                std::ranges::find_if(
-                    getClients(),
-                    [&, this](const std::shared_ptr<nets::TcpRemote<Messages>> remote)
-                    {
-                        return remote->isConnected() && remote->getAddress() == data.address;
-                    }
-                )
-            };
-            server_iter != getClients().end()
+            auto server_ptr {getServerByName(name)};
+            server_ptr
         )
         {
-            (*server_iter)->send(mdsm::Collection{} << Messages::server_manager_players_count_request);
+            server_ptr->send(mdsm::Collection{} << Messages::server_manager_players_count_request);
         }
     }
 }
@@ -342,4 +341,30 @@ std::optional<std::string> ServerManager::getServerNameByEndpoint(const std::str
     }
 
     return std::nullopt;
+}
+
+std::shared_ptr<Remote> ServerManager::getServerByName(const std::string_view name)
+{
+    auto server_iter {
+        std::ranges::find_if(
+            getClients(),
+            [&, this](const std::shared_ptr<Remote> remote)
+            {
+                return
+                    remote->getAddress() == servers_data[std::string{name}].address
+                    &&
+                    std::to_string(remote->getPort()) == servers_data[std::string{name}].port
+                ;
+            } 
+        )
+    };
+
+    if(server_iter != getClients().end())
+    {
+        return *server_iter;
+    }
+    else 
+    {
+        return nullptr;
+    }
 }

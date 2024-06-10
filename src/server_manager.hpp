@@ -45,6 +45,7 @@ class ServerManager : public nets::TcpServer<Messages, Remote>
         bool isServer(const std::string_view address, const nets::Port port);
 
         std::optional<std::string> getServerNameByEndpoint(const std::string_view address, const nets::Port port);
+        std::shared_ptr<Remote>    getServerByName(const std::string_view name);
 
         std::mutex servers_data_mutex;
 
