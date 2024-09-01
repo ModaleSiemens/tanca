@@ -6,4 +6,3 @@ subprojects/nets
 subprojects/tgui
 subprojects/collection.wrap
 subprojects/tgui.wrap
-subprojects/nets/tests
