@@ -39,32 +39,32 @@ void ServerManager::onClientConnection(std::shared_ptr<Remote> client)
 {
     client->setOnReceiving(
         Messages::client_server_list_request,
-        std::bind(onClientServerListRequest, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerManager::onClientServerListRequest, this, std::placeholders::_1, std::placeholders::_2)
     );
 
     client->setOnReceiving(
         Messages::client_server_address_request,
-        std::bind(onClientServerAddressRequest, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerManager::onClientServerAddressRequest, this, std::placeholders::_1, std::placeholders::_2)
     );    
 
     client->setOnReceiving(
         Messages::server_go_public,
-        std::bind(onServerGoPublicRequest, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerManager::onServerGoPublicRequest, this, std::placeholders::_1, std::placeholders::_2)
     );
 
     client->setOnReceiving(
         Messages::server_go_private,
-        std::bind(onServerGoingPrivateRequest, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerManager::onServerGoingPrivateRequest, this, std::placeholders::_1, std::placeholders::_2)
     ); 
 
     client->setOnReceiving(
         Messages::server_password_check_response,
-        std::bind(onServerPasswordCheckResponse, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerManager::onServerPasswordCheckResponse, this, std::placeholders::_1, std::placeholders::_2)
     );     
 
     client->setOnReceiving(
         Messages::server_players_count_response,
-        std::bind(onServerPlayersCountResponse, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerManager::onServerPlayersCountResponse, this, std::placeholders::_1, std::placeholders::_2)
     );               
 
     client->onFailedSending = [&, this](mdsm::Collection data)

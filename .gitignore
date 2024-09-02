@@ -6,3 +6,4 @@ subprojects/nets
 subprojects/tgui
 subprojects/collection.wrap
 subprojects/tgui.wrap
+native_file.txt

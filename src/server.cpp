@@ -75,37 +75,37 @@ void ServerApp::onConnection(std::shared_ptr<Remote> server)
 
     server->setOnReceiving(
         Messages::server_manager_connection_refused,
-        std::bind(onServerManagerConnectionRefused, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerApp::onServerManagerConnectionRefused, this, std::placeholders::_1, std::placeholders::_2)
     );
 
     server->setOnReceiving(
         Messages::server_manager_server_added_to_list,
-        std::bind(onServerAddedToList, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerApp::onServerAddedToList, this, std::placeholders::_1, std::placeholders::_2)
     );
 
     server->setOnReceiving(
         Messages::server_manager_password_check_request,
-        std::bind(onServerManagerPasswordCheckRequest, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerApp::onServerManagerPasswordCheckRequest, this, std::placeholders::_1, std::placeholders::_2)
     );
 
     server->setOnReceiving(
         Messages::server_manager_unaccepted_server_name,
-        std::bind(onServerManagerUnacceptedNameResponse, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerApp::onServerManagerUnacceptedNameResponse, this, std::placeholders::_1, std::placeholders::_2)
     );    
 
     server->setOnReceiving(
         Messages::server_manager_server_name_already_used,
-        std::bind(onServerManagerNameAlreadyUsedResponse, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerApp::onServerManagerNameAlreadyUsedResponse, this, std::placeholders::_1, std::placeholders::_2)
     );    
 
     server->setOnReceiving(
         Messages::server_manager_server_not_found,
-        std::bind(onServerManagerServerNotFoundResponse, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerApp::onServerManagerServerNotFoundResponse, this, std::placeholders::_1, std::placeholders::_2)
     );       
 
     server->setOnReceiving(
         Messages::server_manager_players_count_request,
-        std::bind(onServerManagerPlayersCountRequest, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerApp::onServerManagerPlayersCountRequest, this, std::placeholders::_1, std::placeholders::_2)
     );        
 
     goPublic();
@@ -115,7 +115,7 @@ void ServerApp::onClientConnection(std::shared_ptr<Remote> client)
 {
     client->setOnReceiving(
         Messages::client_connection_request,
-        std::bind(onClientConnected, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ServerApp::onClientConnected, this, std::placeholders::_1, std::placeholders::_2)
     );
 }
 

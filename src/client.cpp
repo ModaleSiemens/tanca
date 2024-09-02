@@ -38,7 +38,7 @@ ClientApp::ClientApp()
     main_window = getWindow("main");
 
     std::thread {
-        serverListUpdater, this
+        &ClientApp::serverListUpdater, this
     }.detach();
 
     setupWelcomeInterface();
@@ -72,47 +72,47 @@ void ClientApp::setupMessageCallbacks()
 {
     server->setOnReceiving(
         Messages::server_manager_server_list_response,
-        std::bind(onServerListResponse, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ClientApp::onServerListResponse, this, std::placeholders::_1, std::placeholders::_2)
     );
 
     server->setOnReceiving(
         Messages::server_manager_server_not_found,
-        std::bind(onServerNotFound, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ClientApp::onServerNotFound, this, std::placeholders::_1, std::placeholders::_2)
     );
 
     server->setOnReceiving(
         Messages::server_full,
-        std::bind(onServerFull, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ClientApp::onServerFull, this, std::placeholders::_1, std::placeholders::_2)
     );    
 
     server->setOnReceiving(
         Messages::server_wrong_password,
-        std::bind(onServerWrongPassword, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ClientApp::onServerWrongPassword, this, std::placeholders::_1, std::placeholders::_2)
     );       
 
     server->setOnReceiving(
         Messages::server_manager_wrong_password,
-        std::bind(onWrongPassword, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ClientApp::onWrongPassword, this, std::placeholders::_1, std::placeholders::_2)
     );    
 
     server->setOnReceiving(
         Messages::server_manager_connection_refused,
-        std::bind(onConnectionRefused, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ClientApp::onConnectionRefused, this, std::placeholders::_1, std::placeholders::_2)
     );    
 
     server->setOnReceiving(
         Messages::server_manager_server_address_response,
-        std::bind(onServerAddressResponse, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ClientApp::onServerAddressResponse, this, std::placeholders::_1, std::placeholders::_2)
     );   
 
     server->setOnReceiving(
         Messages::server_connection_accepted,
-        std::bind(onServerAcceptedConnection, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ClientApp::onServerAcceptedConnection, this, std::placeholders::_1, std::placeholders::_2)
     );     
 
     server->setOnReceiving(
         Messages::server_probe,
-        std::bind(onServerProbe, this, std::placeholders::_1, std::placeholders::_2)
+        std::bind(&ClientApp::onServerProbe, this, std::placeholders::_1, std::placeholders::_2)
     );       
 }
 
