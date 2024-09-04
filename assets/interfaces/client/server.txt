@@ -1,0 +1,86 @@
+Renderer.1 {
+    BackgroundColor = #F5F5F5;
+    BackgroundColorDisabled = #E6E6E6;
+    BackgroundColorHover = white;
+    BorderColor = #3C3C3C;
+    BorderColorDisabled = #7D7D7D;
+    BorderColorHover = black;
+    Borders = (1, 1, 1, 1);
+    CaretColor = black;
+    CaretWidth = 1;
+    DefaultTextColor = #A0A0A0;
+    Padding = (0, 0, 0, 0);
+    SelectedTextBackgroundColor = #006EFF;
+    SelectedTextColor = white;
+    TextColor = #3C3C3C;
+    TextColorDisabled = #7D7D7D;
+    Texture = None;
+    TextureDisabled = None;
+    TextureFocused = None;
+    TextureHover = None;
+}
+
+Renderer.2 {
+    BackgroundColor = #F5F5F5;
+    BackgroundColorDisabled = #E6E6E6;
+    BackgroundColorDown = #EBEBEB;
+    BackgroundColorHover = white;
+    BorderColor = #3C3C3C;
+    BorderColorDisabled = #7D7D7D;
+    BorderColorDown = black;
+    BorderColorFocused = #1E1EB4;
+    BorderColorHover = black;
+    Borders = (1, 1, 1, 1);
+    TextColor = #3C3C3C;
+    TextColorDisabled = #7D7D7D;
+    TextColorDown = black;
+    TextColorHover = black;
+    Texture = None;
+    TextureDisabled = None;
+    TextureDown = None;
+    TextureDownFocused = None;
+    TextureDownHover = None;
+    TextureFocused = None;
+    TextureHover = None;
+}
+
+Picture.background_image {
+    Size = (800, 800);
+
+    Renderer {
+        Texture = "../../images/client/by_address.jpg" Smooth;
+        TransparentTexture = false;
+    }
+}
+
+EditBox.server_address_editbox {
+    DefaultText = "Enter server address...";
+    Position = (230, 70);
+    Renderer = &1;
+    Size = (350, 63);
+    TextSize = 30;
+}
+
+EditBox.server_password_editbox {
+    DefaultText = "Enter server password...";
+    Position = (220, 220);
+    Renderer = &1;
+    Size = (370, 63);
+    TextSize = 30;
+}
+
+Button.connect_button {
+    Position = (300, 380);
+    Renderer = &2;
+    Size = (220, 77);
+    Text = "Connect!";
+    TextSize = 40;
+}
+
+Button.back_button {
+    Position = (40, 500);
+    Renderer = &2;
+    Size = (160, 56);
+    Text = Back;
+    TextSize = 30;
+}
