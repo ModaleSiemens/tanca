@@ -38,6 +38,14 @@ EditBox.world_name_editbox {
     TextSize = 30;
 }
 
+EditBox.port_editbox {
+    DefaultText = "Enter server port...";
+    Position = (20, 120);
+    Renderer = &1;
+    Size = (290, 36.4);
+    TextSize = 30;
+}
+
 EditBox.password_editbox {
     DefaultText = "Enter password...";
     Position = (20, 180);
@@ -60,6 +68,24 @@ EditBox.name_editbox {
     Renderer = &1;
     Size = (330, 36.4);
     TextSize = 30;
+    Visible = false;
+}
+
+EditBox.server_manager_address_editbox {
+    DefaultText = "Enter server manager address...";
+    Position = (450, 180);
+    Renderer = &1;
+    Size = (330, 36.4);
+    TextSize = 20;
+    Visible = false;
+}
+
+EditBox.server_manager_port_editbox {
+    DefaultText = "Enter server manager port...";
+    Position = (480, 280);
+    Renderer = &1;
+    Size = (300, 36.4);
+    TextSize = 20;
     Visible = false;
 }
 
@@ -157,30 +183,4 @@ Button.start_button {
         TextureFocused = None;
         TextureHover = None;
     }
-}
-
-EditBox.server_manager_address_editbox {
-    DefaultText = "Enter server manager address...";
-    Position = (450, 180);
-    Renderer = &1;
-    Size = (330, 36.4);
-    TextSize = 20;
-    Visible = false;
-}
-
-EditBox.server_manager_port_editbox {
-    DefaultText = "Enter server manager port...";
-    Position = (480, 280);
-    Renderer = &1;
-    Size = (300, 36.4);
-    TextSize = 20;
-    Visible = false;
-}
-
-EditBox.port_editbox {
-    DefaultText = "Enter server port...";
-    Position = (20, 120);
-    Renderer = &1;
-    Size = (290, 36.4);
-    TextSize = 30;
 }
