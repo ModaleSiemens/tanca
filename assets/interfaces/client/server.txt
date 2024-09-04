@@ -53,24 +53,53 @@ Picture.background_image {
     }
 }
 
-EditBox.server_address_editbox {
+EditBox.address_editbox {
     DefaultText = "Enter server address...";
-    Position = (230, 70);
+    Position = (230, 40);
     Renderer = &1;
     Size = (350, 63);
     TextSize = 30;
 }
 
-EditBox.server_password_editbox {
+EditBox.port_editbox {
+    DefaultText = "Enter server port...";
+    Position = (260, 160);
+    Size = (290, 63);
+    TextSize = 30;
+
+    Renderer {
+        BackgroundColor = #F5F5F5;
+        BackgroundColorDisabled = #E6E6E6;
+        BackgroundColorHover = white;
+        BorderColor = #3C3C3C;
+        BorderColorDisabled = #7D7D7D;
+        BorderColorHover = black;
+        Borders = (1, 1, 1, 1);
+        CaretColor = black;
+        CaretWidth = 1;
+        DefaultTextColor = #A0A0A0;
+        Padding = (0, 0, 0, 0);
+        SelectedTextBackgroundColor = #006EFF;
+        SelectedTextColor = white;
+        TextColor = #3C3C3C;
+        TextColorDisabled = #7D7D7D;
+        Texture = None;
+        TextureDisabled = None;
+        TextureFocused = None;
+        TextureHover = None;
+    }
+}
+
+EditBox.password_editbox {
     DefaultText = "Enter server password...";
-    Position = (220, 220);
+    Position = (220, 270);
     Renderer = &1;
     Size = (370, 63);
     TextSize = 30;
 }
 
 Button.connect_button {
-    Position = (300, 380);
+    Position = (290, 420);
     Renderer = &2;
     Size = (220, 77);
     Text = "Connect!";
