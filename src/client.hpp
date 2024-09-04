@@ -29,6 +29,7 @@ class ClientApp : public app::Application, private nets::TcpClient<Messages, Rem
         void setupWelcomeInterface();
         void setupServerManagerPromptInterface();
         void setupByNamePromptInterface();
+        void setupByAddressPromptInterface();
 
         void onServerListResponse      (mdsm::Collection servers_data, nets::TcpRemote<Messages>& server);
         void onServerNotFound          (mdsm::Collection message, nets::TcpRemote<Messages>& server);
@@ -63,7 +64,7 @@ class ClientApp : public app::Application, private nets::TcpClient<Messages, Rem
         std::atomic<Status> status;
 
         std::mutex internal_server_list_mutex;
-        std::mutex inteface_mutex;
+        std::mutex interface_mutex;
 
         std::vector<ServerData> internal_server_list;
         

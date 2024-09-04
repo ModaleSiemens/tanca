@@ -197,6 +197,10 @@ void ServerApp::setupWelcomeInterface()
                 setIpVersion(nets::IPVersion::ipv4);
                 setPort(std::stoull(port));
 
+                password = server_password;
+                max_players_count = server_max_player_count == "" ? 0 : std::stoull(server_max_player_count);
+                players_count = 0;
+
                 startAccepting();
 
                 if(main_window->getWidget<tgui::CheckBox>("make_public_checkbox")->isChecked())
@@ -265,10 +269,7 @@ void ServerApp::setupWelcomeInterface()
                         setServerAddress(server_manager_address);
                         setServerPort   (server_manager_port);
 
-                        name     = server_name;
-                        password = server_password;
-                        max_players_count = server_max_player_count == "" ? 0 : std::stoull(server_max_player_count);
-                        players_count = 0;
+                        name = server_name;
 
                         std::println("{}, {}", server_manager_address, server_manager_port);
 

@@ -3,6 +3,7 @@
 
 #include <print>
 
+#include <thread>
 #include <chrono>
 
 using namespace std::chrono_literals;
@@ -51,6 +52,8 @@ void ClientApp::update(const app::Seconds elapsed_seconds)
         setupConnectedToServerInterface(); 
     }
 
+    std::lock_guard<std::mutex> lock_guard {interface_mutex};
+
     Application::update(elapsed_seconds);
 }
 
@@ -65,6 +68,11 @@ void ClientApp::onConnection(std::shared_ptr<Remote> server)
 
     while(server->isConnected())
     {
+        if(status == Status::connected_to_server)
+        {
+            std::println("Completely connected to server...");
+            std::this_thread::sleep_for(500ms);
+        }
     }
 }
 
@@ -124,6 +132,102 @@ void ClientApp::setupWelcomeInterface()
         [&, this]
         {
             setupServerManagerPromptInterface();
+        }
+    );
+
+    main_window->getWidget<tgui::Button>("by_address_button")->onClick(
+        [&, this]
+        {
+            setupByAddressPromptInterface();
+        }
+    );    
+}
+
+void ClientApp::setupByAddressPromptInterface()
+{
+    main_window->setTitle("Enter server data!");
+    main_window->loadWidgetsFromFile("../assets/interfaces/client/server.txt");
+
+    getBackButton()->onClick(
+        [&, this]
+        {
+            setupWelcomeInterface();
+        }
+    );    
+
+    main_window->getWidget<tgui::Button>("connect_button")->onClick(
+        [&, this]
+        {
+            // Disconnect if already previously connected to server
+            if(status == Status::connecting_to_server)
+            {
+                disconnect();
+            }
+
+            main_window->removeErrorFromWidget("connect_button");
+
+            const std::string address {
+                main_window->getWidget<tgui::EditBox>("address_editbox")->getText().toStdString()
+            };
+
+            const std::string port {
+                main_window->getWidget<tgui::EditBox>("port_editbox")->getText().toStdString()
+            };              
+
+            if(address.empty())
+            {
+                main_window->addErrorToWidget(
+                    "address_editbox",
+                    "<color=white>Address can't be empty!</color>",
+                    25
+                );
+            }
+            else if(!isValidAddress(address))
+            {
+                main_window->addErrorToWidget(
+                    "address_editbox",
+                    "<color=white>Invalid address!</color>",
+                    25
+                );
+            }
+            else 
+            {
+                main_window->removeErrorFromWidget("address_editbox");
+            }
+
+            if(port.empty())
+            {
+                main_window->addErrorToWidget(
+                    "port_editbox",
+                    "<color=white>Port number can't be empty!</color>",
+                    25
+                );
+            }        
+            else 
+            {
+                main_window->removeErrorFromWidget("port_editbox");
+            }
+
+            if(isValidAddress(address) && !port.empty())
+            {
+                setServerAddress(address);
+                setServerPort   (port);
+
+                status = Status::connecting_to_server;
+
+                if(!connect())
+                {
+                    main_window->addErrorToWidget(
+                        "connect_button",
+                        "<color=white>Failed to connect to server...</color>",
+                        25
+                    );
+                }
+                else 
+                {
+                    main_window->removeErrorFromWidget("connect_button");
+                }
+            } 
         }
     );
 }
@@ -231,6 +335,12 @@ void ClientApp::setupByNamePromptInterface()
                 name != ""
             )
             {
+                // Disconnect if already previously connected to server
+                if(status == Status::connecting_to_server)
+                {
+                    disconnect();
+                }
+
                 main_window->removeErrorFromWidget("connect_button");
 
                 // Sending request to SERVER MANAGER
@@ -293,16 +403,20 @@ void ClientApp::onServerFull(mdsm::Collection message, nets::TcpRemote<Messages>
 void ClientApp::onWrongPassword(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
     main_window->addErrorToWidget(
-        "connect_button",
+        "password_editbox",
         "<color=white>Password is wrong!</color>",
         25
     );
+
+    //disconnect();
+
+
 }
 
 void ClientApp::onServerWrongPassword(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
     main_window->addErrorToWidget(
-        "connect_button",
+        "password_editbox",
         "<color=white>Password is wrong!</color>",
         25
     );
@@ -338,7 +452,9 @@ void ClientApp::serverListUpdater()
     while(true)
     {
         if(main_window->getWidget("servers_listview") != nullptr && status.load() == Status::connected_to_server_manager)
-        {
+        {   
+            std::lock_guard<std::mutex> interface_lock_guard {interface_mutex};
+
             server->send(mdsm::Collection{} << Messages::client_server_list_request);
 
             auto server_listview {main_window->getWidget<tgui::ListView>("servers_listview")};
