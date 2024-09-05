@@ -3,7 +3,7 @@ Picture.background_image {
     Size = (1920, 1440);
 
     Renderer {
-        Texture = "../../images/server/started.jpg" Smooth;
+        Texture = "../../images/server/running.jpg" Smooth;
         TransparentTexture = false;
     }
 }
@@ -40,7 +40,6 @@ Button.stop_button {
 
 ToggleButton.public_toggle_button {
     Down = true;
-    Enabled = false;
     Position = (20, 530);
     Text = "Public?";
     TextSize = 30;

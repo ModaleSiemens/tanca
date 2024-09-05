@@ -4,6 +4,7 @@
 
 #include <print>
 #include <iostream>
+#include <chrono>
 
 int main()
 {
@@ -13,7 +14,7 @@ int main()
 
     do
     {
-        std::print("Enter the port you want to be used: ");
+        std::print("What port number do you want me to use? ");
         std::cin >> port;
     }
     while(!isValidPort(port));
@@ -69,7 +70,12 @@ void ServerManager::onClientConnection(std::shared_ptr<Remote> client)
 
     client->onFailedSending = [&, this](mdsm::Collection data)
     {
-        std::println("Error sending message.");
+        if(debug)
+        {
+            std::println(
+                "[{}]: Failed sending data.", getFormattedCurrentTime()
+            );
+        }
     };
 
     while(client->isConnected())
@@ -90,14 +96,26 @@ void ServerManager::onClientConnection(std::shared_ptr<Remote> client)
 
 void ServerManager::onForbiddenClientConnection(std::shared_ptr<Remote> client)
 {
-    std::println("Client connected while server wasn't accepting connection.");
+    if(debug)
+    {
+        std::println(
+            "[{}]: Client shoudln't have connected... ({}:{}).", getFormattedCurrentTime(), client->getAddress(), client->getPort()
+        );
+    }
 }
 
 void ServerManager::onClientServerListRequest(mdsm::Collection message, nets::TcpRemote<Messages>& client)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"client_server_list_request\" ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+        );
+    } 
+
     updateServersData();
 
-    std::lock_guard lock_guard {servers_data_mutex};
+    std::lock_guard lock_guard {servers_data_mutex}; 
 
     mdsm::Collection servers_data_message;
 
@@ -123,10 +141,22 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
     const auto server_name {message.retrieve<std::string>()};
     const auto password    {message.retrieve<std::string>()};
 
-    std::println("Client asked for server - {}:{}", server_name, password);
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"client_server_address_request\" ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+        );
+    }
 
     if(!servers_data.contains(server_name))
     {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Server not found ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+            );
+        }
+
         client.send(mdsm::Collection{} << Messages::server_manager_server_not_found);
     }
     else if(servers_data[server_name].requires_password)
@@ -145,7 +175,12 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
             )
         };
 
-        std::println("{}", server_iter != getClients().end());
+        if(debug)
+        {
+            std::println(
+                "[{}]: Sending password check request ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+            );
+        }
 
         (*server_iter)->send(
             mdsm::Collection{}
@@ -157,6 +192,13 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
     }
     else 
     {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Sending server data to client ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+            );
+        }
+
         client.send(
             mdsm::Collection{}
                 << Messages::server_manager_server_address_response
@@ -168,21 +210,40 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
 
 void ServerManager::onServerGoPublicRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
+    std::println("MIAO public");
+
     std::lock_guard lock_guard {servers_data_mutex};
+
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_go_public\" request ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
 
     const auto server_name {message.retrieve<std::string>()};
 
     if(server_name.empty())
     {
-        server.send(mdsm::Collection{} << Messages::server_manager_unaccepted_server_name);
+        if(debug)
+        {
+            std::println(
+                "[{}]: Unaccepted server name ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+            );
+        }
 
-        server.stop();
+        server.send(mdsm::Collection{} << Messages::server_manager_unaccepted_server_name);
     }
     else if(servers_data.contains(server_name))
     {
-        server.send(mdsm::Collection{} << Messages::server_manager_server_name_already_used);
+        if(debug)
+        {
+            std::println(
+                "[{}]: Server name already used ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+            );
+        }
 
-        server.stop();        
+        server.send(mdsm::Collection{} << Messages::server_manager_server_name_already_used);    
     }
     else 
     {
@@ -194,13 +255,29 @@ void ServerManager::onServerGoPublicRequest(mdsm::Collection message, nets::TcpR
             message.retrieve<std::size_t>()
         };
 
+        if(debug)
+        {
+            std::println(
+                "[{}]: Server successfully added to list ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+            );
+        }        
+
         server.send(mdsm::Collection{} << Messages::server_manager_server_added_to_list);
     }
 }
 
 void ServerManager::onServerGoingPrivateRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
+    std::println("MIAO private");
+
     std::lock_guard lock_guard {servers_data_mutex};
+
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_go_private\" request ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
 
     std::optional<std::string> server_name {std::nullopt};
 
@@ -214,18 +291,39 @@ void ServerManager::onServerGoingPrivateRequest(mdsm::Collection message, nets::
 
     if(!server_name)
     {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Server not found ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+            );
+        }
+
         server.send(mdsm::Collection{} << Messages::server_manager_server_not_found);
     }
     else 
     {
-        servers_data.erase(*server_name);
-    }
+        if(debug)
+        {
+            std::println(
+                "[{}]: Server successfully removed from list ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+            );
+        }
 
-    server.stop();
+        servers_data.erase(*server_name);
+
+        server.send(mdsm::Collection{} << Messages::server_manager_server_removed_from_list);
+    }
 }
 
 void ServerManager::onServerPasswordCheckResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received password check response ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
+
     const auto password_was_right {message.retrieve<bool>()};
     const auto client_address     {message.retrieve<std::string>()};
     const auto client_port        {message.retrieve<std::string>()};    
@@ -249,12 +347,26 @@ void ServerManager::onServerPasswordCheckResponse(mdsm::Collection message, nets
     {
         if(!password_was_right)
         {
+            if(debug)
+            {
+                std::println(
+                    "[{}]: Password was wrong ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+                );
+            }
+
             (*client_iter)->send(
                 mdsm::Collection{} << Messages::server_manager_wrong_password
             );    
         }
         else 
         {
+            if(debug)
+            {
+                std::println(
+                    "[{}]: Password was right ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+                );
+            }
+
             (*client_iter)->send(
                 mdsm::Collection{}
                     << Messages::server_manager_server_address_response
@@ -267,7 +379,12 @@ void ServerManager::onServerPasswordCheckResponse(mdsm::Collection message, nets
 
 void ServerManager::onServerPlayersCountResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
-    std::println("onServerPlayersCountResponse");
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_players_count_response\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
 
     std::lock_guard lock_guard {servers_data_mutex};
 
@@ -283,12 +400,24 @@ void ServerManager::onServerPlayersCountResponse(mdsm::Collection message, nets:
 
     if(!server_name)
     {
-        server.send(mdsm::Collection{} << Messages::server_manager_server_not_found);
+        if(debug)
+        {
+            std::println(
+                "[{}]: Server not found ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+            );
+        }
 
-        server.stop();
+        server.send(mdsm::Collection{} << Messages::server_manager_server_not_found);
     }
     else 
     {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Updating player count ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+            );
+        }
+
         servers_data[*server_name].player_count = message.retrieve<std::size_t>();
     }
 }
@@ -304,6 +433,13 @@ void ServerManager::updateServersData()
             server_ptr
         )
         {
+            if(debug)
+            {
+                std::println(
+                    "[{}]: Sending players count request ({}:{}).", getFormattedCurrentTime(), data.address, data.port
+                );
+            }
+
             server_ptr->send(mdsm::Collection{} << Messages::server_manager_players_count_request);
         }
     }

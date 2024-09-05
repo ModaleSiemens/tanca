@@ -50,4 +50,6 @@ class ServerManager : public nets::TcpServer<Messages, Remote>
         std::mutex servers_data_mutex;
 
         std::unordered_map<std::string, ServerData> servers_data;
+
+        bool debug {true};
 };

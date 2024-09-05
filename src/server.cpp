@@ -46,6 +46,8 @@ void ServerApp::goPublic()
 {
     if(!is_public)
     {
+        std::println("Sending \"go_public\" request");
+
         server->send(
             mdsm::Collection{}
                 << Messages::server_go_public
@@ -61,6 +63,8 @@ void ServerApp::goPrivate()
 {
     if(is_public)
     {
+        std::println("Sending \"go_private\" request");
+
         server->send(mdsm::Collection{} << Messages::server_go_private);
     }
 }
@@ -82,6 +86,11 @@ void ServerApp::onConnection(std::shared_ptr<Remote> server)
         Messages::server_manager_server_added_to_list,
         std::bind(&ServerApp::onServerAddedToList, this, std::placeholders::_1, std::placeholders::_2)
     );
+
+    server->setOnReceiving(
+        Messages::server_manager_server_removed_from_list,
+        std::bind(&ServerApp::onServerRemovedFromList, this, std::placeholders::_1, std::placeholders::_2)
+    );    
 
     server->setOnReceiving(
         Messages::server_manager_password_check_request,
@@ -109,6 +118,11 @@ void ServerApp::onConnection(std::shared_ptr<Remote> server)
     );        
 
     goPublic();
+
+    while(true)
+    {
+
+    }
 }
 
 void ServerApp::onClientConnection(std::shared_ptr<Remote> client)
@@ -122,6 +136,27 @@ void ServerApp::onClientConnection(std::shared_ptr<Remote> client)
 void ServerApp::onForbiddenClientConnection(std::shared_ptr<Remote> client)
 {
     std::println("Client forbiddenly connected!");
+}
+
+void ServerApp::setupRunningInterface()
+{
+    main_window->loadWidgetsFromFile("../assets/interfaces/server/running.txt");
+
+    main_window->getWidget<tgui::ToggleButton>("public_toggle_button")->onToggle(
+        [&, this]
+        {
+            if(is_public)
+            {   
+                std::println("Go private?");
+                goPrivate();
+            }
+            else 
+            {
+                std::println("Go public?");
+                goPublic();
+            }
+        }
+    );
 }
 
 void ServerApp::setupWelcomeInterface()
@@ -205,9 +240,10 @@ void ServerApp::setupWelcomeInterface()
 
                 if(main_window->getWidget<tgui::CheckBox>("make_public_checkbox")->isChecked())
                 {
-                    const auto server_name            {main_window->getWidget<tgui::EditBox>("name_editbox")->getText().toStdString()};
-                    const auto server_manager_address {main_window->getWidget<tgui::EditBox>("server_manager_address_editbox")->getText().toStdString()};
-                    const auto server_manager_port    {main_window->getWidget<tgui::EditBox>("server_manager_port_editbox")->getText().toStdString()};                             
+                    const auto server_name {main_window->getWidget<tgui::EditBox>("name_editbox")->getText().toStdString()};
+                    
+                    server_manager_address = main_window->getWidget<tgui::EditBox>("server_manager_address_editbox")->getText().toStdString();
+                    server_manager_port    = main_window->getWidget<tgui::EditBox>("server_manager_port_editbox")->getText().toStdString();                             
 
                     if(server_name.empty())
                     {
@@ -275,7 +311,6 @@ void ServerApp::setupWelcomeInterface()
 
                         if(connect())
                         {
-                            std::println("Connected");
                         }
                         else 
                         {
@@ -288,14 +323,12 @@ void ServerApp::setupWelcomeInterface()
                         }
                     }
                 }                
+
+                setupRunningInterface();
             }
 
         }
     );
-}
-
-void ServerApp::setupRunningInterface()
-{
 }
 
 void ServerApp::onServerManagerConnectionRefused(mdsm::Collection message, nets::TcpRemote<Messages>& server)
@@ -306,6 +339,25 @@ void ServerApp::onServerManagerConnectionRefused(mdsm::Collection message, nets:
 void ServerApp::onServerAddedToList(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
     is_public = true;
+
+    if(auto public_toggle {main_window->getWidget<tgui::ToggleButton>("public_toggle_button")})
+    {
+        public_toggle->setDown(true);
+    }
+
+    std::println("Server successfully went public");
+}
+
+void ServerApp::onServerRemovedFromList(mdsm::Collection message, nets::TcpRemote<Messages>& server)
+{
+    is_public = false;
+
+    if(auto public_toggle {main_window->getWidget<tgui::ToggleButton>("public_toggle_button")})
+    {
+        public_toggle->setDown(false);
+    }    
+
+    std::println("Server successfully went private");
 }
 
 void ServerApp::onServerManagerServerNotFoundResponse(mdsm::Collection message, nets::TcpRemote<Messages> &server_manager)

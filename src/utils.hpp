@@ -1,7 +1,8 @@
 #pragma once
 
 #include <string_view>
-
+#include <format>
+#include <chrono>
 #include <boost/asio.hpp>
 
 bool isValidIPv4Address(const std::string_view address)
@@ -42,4 +43,12 @@ bool isValidPort(const std::string_view port)
     {
         return false;
     }
+}
+
+std::string getFormattedCurrentTime()
+{
+    return std::format(
+        "{:%Y-%m-%d %X}",
+        std::chrono::current_zone()->to_local(std::chrono::system_clock::now())
+    );
 }

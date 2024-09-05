@@ -40,6 +40,7 @@ class ServerApp
 
         void onServerManagerConnectionRefused     (mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
         void onServerAddedToList                  (mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
+        void onServerRemovedFromList              (mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
         void onServerManagerServerNotFoundResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
 
         void onClientConnected(mdsm::Collection message, nets::TcpRemote<Messages>& client);
@@ -52,10 +53,13 @@ class ServerApp
 
         std::shared_ptr<app::Window> main_window;
 
-        bool is_public {false};
+        std::atomic_bool is_public {false};
 
         std::string              name;
         std::string              password;
         std::atomic<std::size_t> players_count;
         std::size_t              max_players_count;
+
+        std::string server_manager_address;
+        std::string server_manager_port;
 };

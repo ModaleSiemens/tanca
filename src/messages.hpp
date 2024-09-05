@@ -43,6 +43,7 @@ enum class Messages
     server_manager_wrong_password,
     server_manager_server_address_response,
     server_manager_server_added_to_list,
+    server_manager_server_removed_from_list,
     server_manager_probe,
     server_manager_password_check_request = 99,
     server_manager_server_name_already_used,
