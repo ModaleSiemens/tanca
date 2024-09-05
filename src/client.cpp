@@ -59,8 +59,22 @@ void ClientApp::update(const app::Seconds elapsed_seconds)
 
 void ClientApp::onConnection(std::shared_ptr<Remote> server)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Connected to server ({}:{}).", getFormattedCurrentTime(), server->getAddress(), server->getPort()
+        );
+    }
+
     if(status == Status::connecting_to_server)
     {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Sending \"client_connection_request\" ({}:{}).", getFormattedCurrentTime(), server->getAddress(), server->getPort()
+            );
+        }
+
         server->send(
             mdsm::Collection{} << Messages::client_connection_request << main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()
         );
@@ -70,7 +84,12 @@ void ClientApp::onConnection(std::shared_ptr<Remote> server)
     {
         if(status == Status::connected_to_server)
         {
-            std::println("Completely connected to server...");
+            if(debug)
+            {
+                std::println(
+                    "[{}]: Fully connected to server ({}:{}).", getFormattedCurrentTime(), server->getAddress(), server->getPort()
+                );
+            }
             std::this_thread::sleep_for(500ms);
         }
     }
@@ -343,6 +362,13 @@ void ClientApp::setupByNamePromptInterface()
 
                 main_window->removeErrorFromWidget("connect_button");
 
+                if(debug)
+                {
+                    std::println(
+                        "[{}]: Sending \"client_server_address_request\" ({}:{}).", getFormattedCurrentTime(), server->getAddress(), server->getPort()
+                    );
+                }
+
                 // Sending request to SERVER MANAGER
                 server->send(
                     mdsm::Collection{}
@@ -365,6 +391,14 @@ void ClientApp::setupByNamePromptInterface()
 
 void ClientApp::onServerListResponse(mdsm::Collection servers_data, nets::TcpRemote<Messages> &server)
 {
+
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_manager_server_list_response\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
+    
     std::lock_guard<std::mutex> lock_guard {internal_server_list_mutex};
     
     internal_server_list.clear();
@@ -384,6 +418,13 @@ void ClientApp::onServerListResponse(mdsm::Collection servers_data, nets::TcpRem
 
 void ClientApp::onServerNotFound(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_manager_server_not_found\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
+
     main_window->addErrorToWidget(
         "connect_button",
         "<color=white>Server not found!</color>",
@@ -393,6 +434,13 @@ void ClientApp::onServerNotFound(mdsm::Collection message, nets::TcpRemote<Messa
 
 void ClientApp::onServerFull(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_manager_server_full\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
+
     main_window->addErrorToWidget(
         "connect_button",
         "<color=white>Server is full!</color>",
@@ -402,19 +450,29 @@ void ClientApp::onServerFull(mdsm::Collection message, nets::TcpRemote<Messages>
 
 void ClientApp::onWrongPassword(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_manager_wrong_password\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
+
     main_window->addErrorToWidget(
         "password_editbox",
         "<color=white>Password is wrong!</color>",
         25
     );
-
-    //disconnect();
-
-
 }
 
 void ClientApp::onServerWrongPassword(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_wrong_password\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
+
     main_window->addErrorToWidget(
         "password_editbox",
         "<color=white>Password is wrong!</color>",
@@ -424,12 +482,24 @@ void ClientApp::onServerWrongPassword(mdsm::Collection message, nets::TcpRemote<
 
 void ClientApp::onServerAcceptedConnection(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_connection_accepted\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
+
     status = Status::connected_to_server;
 }
 
 void ClientApp::onServerProbe(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
-    std::println("Server probed!");
+    if(debug)
+    {
+        std::println(
+            "[{}]: Probing server ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
 }
 
 void ClientApp::onConnectionRefused(mdsm::Collection message, nets::TcpRemote<Messages> &server)
@@ -483,6 +553,13 @@ void ClientApp::serverListUpdater()
 
 void ClientApp::onServerAddressResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_manager_server_address_response\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
+
     // Disconnect from server manager
     disconnect();
 

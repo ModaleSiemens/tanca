@@ -70,4 +70,6 @@ class ClientApp : public app::Application, private nets::TcpClient<Messages, Rem
         
         std::string server_manager_address;
         std::string server_manager_port;
+
+        bool debug {true};
 };
