@@ -46,7 +46,12 @@ void ServerApp::goPublic()
 {
     if(!is_public)
     {
-        std::println("Sending \"go_public\" request");
+        if(debug)
+        {
+            std::println(
+                "[{}]: Sending \"server_go_public\" request ({}:{}).", getFormattedCurrentTime(), server_manager_address, server_manager_port
+            );
+        }
 
         server->send(
             mdsm::Collection{}
@@ -63,7 +68,12 @@ void ServerApp::goPrivate()
 {
     if(is_public)
     {
-        std::println("Sending \"go_private\" request");
+        if(debug)
+        {
+            std::println(
+                "[{}]: Sending \"server_go_private\" request ({}:{}).", getFormattedCurrentTime(), server_manager_address, server_manager_port
+            );
+        }
 
         server->send(mdsm::Collection{} << Messages::server_go_private);
     }
@@ -75,7 +85,12 @@ ServerApp::~ServerApp()
 
 void ServerApp::onConnection(std::shared_ptr<Remote> server)
 {
-    // Connection remains open until server goes private
+    if(debug)
+    {
+        std::println(
+            "[{}]: Connected to Server Manager ({}:{}).", getFormattedCurrentTime(), server->getAddress(), server->getPort()
+        );
+    }
 
     server->setOnReceiving(
         Messages::server_manager_connection_refused,
@@ -127,6 +142,13 @@ void ServerApp::onConnection(std::shared_ptr<Remote> server)
 
 void ServerApp::onClientConnection(std::shared_ptr<Remote> client)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Client connected ({}:{}).", getFormattedCurrentTime(), client->getAddress(), client->getPort()
+        );
+    }
+
     client->setOnReceiving(
         Messages::client_connection_request,
         std::bind(&ServerApp::onClientConnected, this, std::placeholders::_1, std::placeholders::_2)
@@ -135,7 +157,12 @@ void ServerApp::onClientConnection(std::shared_ptr<Remote> client)
 
 void ServerApp::onForbiddenClientConnection(std::shared_ptr<Remote> client)
 {
-    std::println("Client forbiddenly connected!");
+    if(debug)
+    {
+        std::println(
+            "[{}]: Client shouldn't have connected... ({}:{}).", getFormattedCurrentTime(), client->getAddress(), client->getPort()
+        );
+    }
 }
 
 void ServerApp::setupRunningInterface()
@@ -147,12 +174,10 @@ void ServerApp::setupRunningInterface()
         {
             if(is_public)
             {   
-                std::println("Go private?");
                 goPrivate();
             }
             else 
             {
-                std::println("Go public?");
                 goPublic();
             }
         }
@@ -307,8 +332,6 @@ void ServerApp::setupWelcomeInterface()
 
                         name = server_name;
 
-                        std::println("{}, {}", server_manager_address, server_manager_port);
-
                         if(connect())
                         {
                         }
@@ -333,7 +356,12 @@ void ServerApp::setupWelcomeInterface()
 
 void ServerApp::onServerManagerConnectionRefused(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
-    std::println("Server Manager refused connection!");
+    if(debug)
+    {
+        std::println(
+            "[{}]: Server Manager refused connection ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
 }
 
 void ServerApp::onServerAddedToList(mdsm::Collection message, nets::TcpRemote<Messages>& server)
@@ -345,7 +373,12 @@ void ServerApp::onServerAddedToList(mdsm::Collection message, nets::TcpRemote<Me
         public_toggle->setDown(true);
     }
 
-    std::println("Server successfully went public");
+    if(debug)
+    {
+        std::println(
+            "[{}]: Successfully went public ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
 }
 
 void ServerApp::onServerRemovedFromList(mdsm::Collection message, nets::TcpRemote<Messages>& server)
@@ -357,14 +390,24 @@ void ServerApp::onServerRemovedFromList(mdsm::Collection message, nets::TcpRemot
         public_toggle->setDown(false);
     }    
 
-    std::println("Server successfully went private");
+    if(debug)
+    {
+        std::println(
+            "[{}]: Successfully went private ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
 }
 
 void ServerApp::onServerManagerServerNotFoundResponse(mdsm::Collection message, nets::TcpRemote<Messages> &server_manager)
 {   
     is_public = false;
 
-    std::println("Server wasn't found on Server Manager!");
+    if(debug)
+    {
+        std::println(
+            "[{}]: Server wasn't found by Server Manager ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
+        );
+    }
 }
 
 void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Messages>& client)
@@ -373,6 +416,13 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
     {
         if(message.retrieve<std::string>() != password)
         {   
+            if(debug)
+            {
+                std::println(
+                    "[{}]: Received password is wrong ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+                );
+            }
+
             client.send(mdsm::Collection{} << Messages::server_wrong_password);
 
             client.stop();
@@ -389,22 +439,37 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
 
         while(client.isConnected())
         {
-            std::println("Probing client...");
+            if(debug)
+            {
+                std::println(
+                    "[{}]: Probing client ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+                );
+            }
 
             client.send(mdsm::Collection{} << Messages::server_probe);
 
-            std::this_thread::sleep_for(TcpClient::PingTime{1});
+            std::this_thread::sleep_for(TcpClient::PingTime{2});
         }
 
         --players_count;
 
-        std::println("Client disconnected");
+        if(debug)
+        {
+            std::println(
+                "[{}]: Client disconnected ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+            );
+        }
     }
     else 
     {
         client.send(mdsm::Collection{} << Messages::server_full);
 
-        std::println("Server full");
+        if(debug)
+        {
+            std::println(
+                "[{}]: Server is full ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+            );
+        }
 
         client.stop();
 
@@ -414,6 +479,13 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
 
 void ServerApp::onServerManagerPasswordCheckRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Checking password ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
+        );
+    }    
+
     server_manager.send(
         mdsm::Collection{}
             << Messages::server_password_check_response
@@ -426,13 +498,32 @@ void ServerApp::onServerManagerPasswordCheckRequest(mdsm::Collection message, ne
 
 void ServerApp::onServerManagerPlayersCountRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Sending player count ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
+        );
+    }
+
     server_manager.send(mdsm::Collection{} << Messages::server_players_count_response << players_count.load());
 }
 
 void ServerApp::onServerManagerNameAlreadyUsedResponse(mdsm::Collection message, nets::TcpRemote<Messages> &server_manager)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Server name already used ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
+        );
+    }    
 }
 
 void ServerApp::onServerManagerUnacceptedNameResponse(mdsm::Collection message, nets::TcpRemote<Messages> &server_manager)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Server name not accepted ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
+        );
+    }    
 }

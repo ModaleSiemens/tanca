@@ -62,4 +62,6 @@ class ServerApp
 
         std::string server_manager_address;
         std::string server_manager_port;
+
+        bool debug {true};
 };
