@@ -359,7 +359,7 @@ void ServerApp::onServerManagerConnectionRefused(mdsm::Collection message, nets:
     if(debug)
     {
         std::println(
-            "[{}]: Server Manager refused connection ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+            "[{}]: Received \"server_manager_connection_refused\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
         );
     }
 }
@@ -376,7 +376,7 @@ void ServerApp::onServerAddedToList(mdsm::Collection message, nets::TcpRemote<Me
     if(debug)
     {
         std::println(
-            "[{}]: Successfully went public ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+            "[{}]: Received \"server_manager_server_added_to_list\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
         );
     }
 }
@@ -393,7 +393,7 @@ void ServerApp::onServerRemovedFromList(mdsm::Collection message, nets::TcpRemot
     if(debug)
     {
         std::println(
-            "[{}]: Successfully went private ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+            "[{}]: Received \"server_manager_server_removed_from_list\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
         );
     }
 }
@@ -405,7 +405,7 @@ void ServerApp::onServerManagerServerNotFoundResponse(mdsm::Collection message, 
     if(debug)
     {
         std::println(
-            "[{}]: Server wasn't found by Server Manager ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
+            "[{}]: Received \"server_manager_server_not_found\" ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
         );
     }
 }
@@ -482,7 +482,7 @@ void ServerApp::onServerManagerPasswordCheckRequest(mdsm::Collection message, ne
     if(debug)
     {
         std::println(
-            "[{}]: Checking password ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
+            "[{}]: Received \"server_manager_password_check_request\" ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
         );
     }    
 
@@ -501,7 +501,7 @@ void ServerApp::onServerManagerPlayersCountRequest(mdsm::Collection message, net
     if(debug)
     {
         std::println(
-            "[{}]: Sending player count ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
+            "[{}]: Received \"server_manager_player_count_request\" ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
         );
     }
 
@@ -513,7 +513,7 @@ void ServerApp::onServerManagerNameAlreadyUsedResponse(mdsm::Collection message,
     if(debug)
     {
         std::println(
-            "[{}]: Server name already used ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
+            "[{}]: Received \"server_manager_server_name_already_used\" ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
         );
     }    
 }
@@ -523,7 +523,7 @@ void ServerApp::onServerManagerUnacceptedNameResponse(mdsm::Collection message, 
     if(debug)
     {
         std::println(
-            "[{}]: Server name not accepted ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
+            "[{}]: Received \"server_manager_unaccepted_server_name\" ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
         );
     }    
 }
