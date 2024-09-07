@@ -1,4 +1,5 @@
 build
+builddir
 .vscode
 subprojects/collection
 subprojects/app
