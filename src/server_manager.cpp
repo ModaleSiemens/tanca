@@ -178,7 +178,7 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
         if(debug)
         {
             std::println(
-                "[{}]: Sending password check request ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+                "[{}]: Sending \"server_manager_password_check_request\" ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
             );
         }
 
@@ -195,7 +195,7 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
         if(debug)
         {
             std::println(
-                "[{}]: Sending server data to client ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+                "[{}]: Sending \"server_manager_server_address_response\" ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
             );
         }
 
@@ -210,8 +210,6 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
 
 void ServerManager::onServerGoPublicRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
-    std::println("MIAO public");
-
     std::lock_guard lock_guard {servers_data_mutex};
 
     if(debug)
@@ -228,7 +226,7 @@ void ServerManager::onServerGoPublicRequest(mdsm::Collection message, nets::TcpR
         if(debug)
         {
             std::println(
-                "[{}]: Unaccepted server name ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+                "[{}]: Sending \"server_manager_unaccepted_server_name\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
             );
         }
 
@@ -239,7 +237,7 @@ void ServerManager::onServerGoPublicRequest(mdsm::Collection message, nets::TcpR
         if(debug)
         {
             std::println(
-                "[{}]: Server name already used ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+                "[{}]: Sending \"server_manager_server_name_already_used\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
             );
         }
 
@@ -258,7 +256,7 @@ void ServerManager::onServerGoPublicRequest(mdsm::Collection message, nets::TcpR
         if(debug)
         {
             std::println(
-                "[{}]: Server successfully added to list ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+                "[{}]: Sending \"server_manager_server_added_to_list\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
             );
         }        
 
@@ -268,8 +266,6 @@ void ServerManager::onServerGoPublicRequest(mdsm::Collection message, nets::TcpR
 
 void ServerManager::onServerGoingPrivateRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
-    std::println("MIAO private");
-
     std::lock_guard lock_guard {servers_data_mutex};
 
     if(debug)
@@ -294,7 +290,7 @@ void ServerManager::onServerGoingPrivateRequest(mdsm::Collection message, nets::
         if(debug)
         {
             std::println(
-                "[{}]: Server not found ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+                "[{}]: Sending \"server_manager_server_not_found\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
             );
         }
 
@@ -305,7 +301,7 @@ void ServerManager::onServerGoingPrivateRequest(mdsm::Collection message, nets::
         if(debug)
         {
             std::println(
-                "[{}]: Server successfully removed from list ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+                "[{}]: Sending \"server_manager_server_removed_from_list\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
             );
         }
 
@@ -320,7 +316,7 @@ void ServerManager::onServerPasswordCheckResponse(mdsm::Collection message, nets
     if(debug)
     {
         std::println(
-            "[{}]: Received password check response ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+            "[{}]: Received \"server_password_check_response\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
         );
     }
 
@@ -350,7 +346,7 @@ void ServerManager::onServerPasswordCheckResponse(mdsm::Collection message, nets
             if(debug)
             {
                 std::println(
-                    "[{}]: Password was wrong ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+                    "[{}]: Sending \"server_manager_wrong_password\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
                 );
             }
 
@@ -363,7 +359,7 @@ void ServerManager::onServerPasswordCheckResponse(mdsm::Collection message, nets
             if(debug)
             {
                 std::println(
-                    "[{}]: Password was right ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+                    "[{}]: Sending \"server_manager_server_address_response\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
                 );
             }
 
@@ -403,7 +399,7 @@ void ServerManager::onServerPlayersCountResponse(mdsm::Collection message, nets:
         if(debug)
         {
             std::println(
-                "[{}]: Server not found ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+                "[{}]: Sending \"server_manager_server_not_found\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
             );
         }
 
@@ -436,7 +432,7 @@ void ServerManager::updateServersData()
             if(debug)
             {
                 std::println(
-                    "[{}]: Sending players count request ({}:{}).", getFormattedCurrentTime(), data.address, data.port
+                    "[{}]: Sending \"server_manager_players_count_request\" ({}:{}).", getFormattedCurrentTime(), data.address, data.port
                 );
             }
 
