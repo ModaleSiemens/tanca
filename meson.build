@@ -21,7 +21,7 @@ deps = [
 subdir('src')
 
 executable(
-    'tanca_client',
+    'client',
     client_src,
 
     dependencies: deps,
@@ -33,7 +33,7 @@ executable(
 )
 
 executable(
-    'tanca_server',
+    'server',
     server_src,
 
     dependencies: deps,
@@ -45,7 +45,7 @@ executable(
 )
 
 executable(
-    'tanca_server_manager',
+    'server_manager',
     server_manager_src,
 
     dependencies: deps,
