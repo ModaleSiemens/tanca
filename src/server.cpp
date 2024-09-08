@@ -238,54 +238,14 @@ void ServerApp::setupWelcomeInterface()
 {
     main_window->loadWidgetsFromFile("../assets/interfaces/server/setup.txt");
 
-    main_window->getWidget<tgui::CheckBox>("make_public_checkbox")->onCheck(
-        [&, this]
-        {
-            main_window->getWidget("name_editbox")->setVisible(true);
-            main_window->getWidget("server_manager_address_editbox")->setVisible(true);
-            main_window->getWidget("server_manager_port_editbox")->setVisible(true);
-        }
-    );
-
-    main_window->getWidget<tgui::CheckBox>("make_public_checkbox")->onUncheck(
-        [&, this]
-        {
-            main_window->getWidget("name_editbox")->setVisible(false);
-            main_window->getWidget("server_manager_address_editbox")->setVisible(false);
-            main_window->getWidget("server_manager_port_editbox")->setVisible(false);
-
-            main_window->removeErrorFromWidget("name_editbox");
-            main_window->removeErrorFromWidget("server_manager_address_editbox");
-            main_window->removeErrorFromWidget("server_manager_port_editbox");
-        }
-    );    
-
     main_window->getWidget<tgui::Button>("start_button")->onClick(
         [&, this]
         {
-            const auto world_name              {main_window->getWidget<tgui::EditBox>("world_name_editbox")->getText().toStdString()};
-            const auto server_password         {main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()};
-            const auto server_max_player_count {main_window->getWidget<tgui::EditBox>("max_player_count_editbox")->getText().toStdString()};  
+            const auto server_password     {main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()};
+            const auto server_player_limit {main_window->getWidget<tgui::EditBox>("max_player_count_editbox")->getText().toStdString()};  
+            const auto server_name         {main_window->getWidget<tgui::EditBox>("name_editbox")->getText().toStdString()};
 
             port = main_window->getWidget<tgui::EditBox>("port_editbox")->getText().toStdString();
-
-            const bool world_exists {
-                std::filesystem::exists(std::string{"../data/worlds/"} + world_name) && !world_name.empty()
-            };
-
-            if(!world_exists)
-            {
-                main_window->addErrorToWidget(
-                    "world_name_editbox",
-                    "<color=white>World not found!</color>",
-                    20,
-                    25
-                );
-            }
-            else 
-            {
-                main_window->removeErrorFromWidget("world_name_editbox");
-            }
 
             if(port.empty())
             {
@@ -301,102 +261,30 @@ void ServerApp::setupWelcomeInterface()
                 main_window->removeErrorFromWidget("port_editbox");
             } 
 
-            if(world_exists && !port.empty())
+            if(server_name.empty())
             {
-                //setupRunningInterface();
+                main_window->addErrorToWidget(
+                    "port_editbox",
+                    "<color=white>Server name can't be empty!</color>",
+                    20,
+                    25
+                );
+            }
+            else 
+            {
+                main_window->removeErrorFromWidget("name_editbox");
+            }             
 
+            if(!port.empty())
+            {
                 setIpVersion(nets::IPVersion::ipv4);
                 setPort(std::stoull(port));
 
                 password = server_password;
-                max_players_count = server_max_player_count == "" ? 0 : std::stoull(server_max_player_count);
+                max_players_count = server_player_limit == "" ? 0 : std::stoull(server_player_limit);
                 players_count = 0;
 
                 startAccepting();
-
-                if(main_window->getWidget<tgui::CheckBox>("make_public_checkbox")->isChecked())
-                {
-                    const auto server_name {main_window->getWidget<tgui::EditBox>("name_editbox")->getText().toStdString()};
-                    
-                    server_manager_address = main_window->getWidget<tgui::EditBox>("server_manager_address_editbox")->getText().toStdString();
-                    server_manager_port    = main_window->getWidget<tgui::EditBox>("server_manager_port_editbox")->getText().toStdString();                             
-
-                    if(server_name.empty())
-                    {
-                        main_window->addErrorToWidget(
-                            "name_editbox",
-                            "<color=white>Server name can't be empty!</color>",
-                            20
-                        );
-                    }
-                    else 
-                    {
-                        main_window->removeErrorFromWidget("name_editbox");
-                    }
-
-                    if(server_manager_port.empty())
-                    {
-                        main_window->addErrorToWidget(
-                            "server_manager_port_editbox",
-                            "<color=white>Server manager port\ncan't be empty!</color>",
-                            20,
-                            50
-                        );
-                    }
-                    else 
-                    {
-                        main_window->removeErrorFromWidget("server_manager_port_editbox");
-                    }                
-
-                    if(server_manager_address.empty())
-                    {
-                        main_window->addErrorToWidget(
-                            "server_manager_address_editbox",
-                            "<color=white>Server manager address\ncan't be empty!</color>",
-                            20,
-                            50
-                        );
-                    }
-                    else if(!isValidAddress(server_manager_address))
-                    {
-                        main_window->addErrorToWidget(
-                            "server_manager_address_editbox",
-                            "<color=white>Address not valid!</color>",
-                            20
-                        );
-                    }
-                    else 
-                    {
-                        main_window->removeErrorFromWidget("server_manager_address_editbox");
-                    }
-
-                    if(
-                        isValidAddress(server_manager_address)
-                        &&
-                        !server_manager_port.empty()
-                        &&
-                        !server_name.empty()
-                    )
-                    {
-                        setServerAddress(server_manager_address);
-                        setServerPort   (server_manager_port);
-
-                        name = server_name;
-
-                        if(connect())
-                        {
-                        }
-                        else 
-                        {
-                            main_window->addErrorToWidget(
-                                "start_button",
-                                "<color=white>Failed to connect\nto server manager...</color>",
-                                20,
-                                50
-                            );
-                        }
-                    }
-                }                
 
                 setupRunningInterface();
             }
