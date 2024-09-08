@@ -1,8 +1,9 @@
-ChatBox.chatbox {
+ChatBox.chat_chatbox {
     LinesStartFromTop = false;
     NewLinesBelowOthers = true;
-    Position = (520, 10);
-    Size = (270, 124);
+    Position = (370, 0);
+    ScrollbarPolicy = Automatic;
+    Size = (430, 197.481);
     TextColor = black;
     TextSize = 13;
 
@@ -18,9 +19,45 @@ ChatBox.chatbox {
             ArrowBackgroundColorHover = white;
             ArrowColor = #3C3C3C;
             ArrowColorHover = black;
+            TextureArrowDown = None;
+            TextureArrowDownHover = None;
+            TextureArrowUp = None;
+            TextureArrowUpHover = None;
+            TextureThumb = None;
+            TextureThumbHover = None;
+            TextureTrack = None;
+            TextureTrackHover = None;
             ThumbColor = #DCDCDC;
             ThumbColorHover = #E6E6E6;
             TrackColor = #F5F5F5;
         }
+    }
+}
+
+EditBox.chat_editbox {
+    Position = (10, 547.2);
+    Size = (780, 37.8);
+    TextSize = 13;
+
+    Renderer {
+        BackgroundColor = #F5F5F5;
+        BackgroundColorDisabled = #E6E6E6;
+        BackgroundColorHover = white;
+        BorderColor = #3C3C3C;
+        BorderColorDisabled = #7D7D7D;
+        BorderColorHover = black;
+        Borders = (1, 1, 1, 1);
+        CaretColor = black;
+        CaretWidth = 1;
+        DefaultTextColor = #A0A0A0;
+        Padding = (0, 0, 0, 0);
+        SelectedTextBackgroundColor = #006EFF;
+        SelectedTextColor = white;
+        TextColor = #3C3C3C;
+        TextColorDisabled = #7D7D7D;
+        Texture = None;
+        TextureDisabled = None;
+        TextureFocused = None;
+        TextureHover = None;
     }
 }
