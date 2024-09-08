@@ -59,7 +59,7 @@ EditBox.player_limit_editbox {
 }
 
 Button.start_button {
-    Position = (150, 270);
+    Position = (150, 390);
     Text = "Start!";
     TextSize = 30;
 
