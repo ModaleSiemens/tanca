@@ -141,6 +141,26 @@ void ClientApp::setupMessageCallbacks()
         Messages::server_credentials_request,
         std::bind(&ClientApp::onServerCredentialsRequest, this, std::placeholders::_1, std::placeholders::_2)
     );          
+
+    server->onFailedSending = [&, this](mdsm::Collection data)
+    {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Failed sending data.", getFormattedCurrentTime()
+            );
+        }
+    };
+
+    server->onFailedReading = [&, this](std::optional<boost::system::error_code> error)
+    {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Failed reading data.", getFormattedCurrentTime()
+            );
+        }
+    };    
 }
 
 void ClientApp::setupWelcomeInterface()
@@ -494,17 +514,24 @@ void ClientApp::onServerAcceptedConnection(mdsm::Collection message, nets::TcpRe
 
 void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_credentials_request\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
+
     addWindow<PopUp>(
         "credentials_popup", true, "../assets/interfaces/client/credentials_popup.txt"
     );
 
-    auto popup {
-        getWindow("credentials_popup")
-    };
-
-    popup->getWidget<tgui::Button>("send_button")->onClick(
+    getWindow("credentials_popup")->getWidget<tgui::Button>("send_button")->onClick(
         [&, this]
         {
+            auto popup {
+                getWindow("credentials_popup")
+            };
+
             const auto nickname {popup->getWidget<tgui::EditBox>("nickname_editbox")->getText().toStdString()};
             const auto password {popup->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()};
 
@@ -513,7 +540,7 @@ void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRe
                 popup->addErrorToWidget(
                     "nickname_editbox",
                     "<color=white>Nickname can't be empty!</color>",
-                    25
+                    20
                 );
             }     
             else
@@ -524,9 +551,9 @@ void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRe
             if(password.empty())
             {
                 popup->addErrorToWidget(
-                    "nickname_editbox",
-                    "<color=white>Nickname can't be empty!</color>",
-                    25
+                    "password_editbox",
+                    "<color=white>Password can't be empty!</color>",
+                    20
                 );
             }     
             else
@@ -536,7 +563,9 @@ void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRe
 
             if(!nickname.empty() && !password.empty())
             {
-                server.send(
+                std::println("Here");
+
+                this->server->send(
                     mdsm::Collection{}
                         << Messages::client_credentials_response
                         << nickname

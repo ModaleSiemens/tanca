@@ -133,7 +133,27 @@ void ServerApp::onConnection(std::shared_ptr<Remote> server)
     server->setOnReceiving(
         Messages::server_manager_players_count_request,
         std::bind(&ServerApp::onServerManagerPlayersCountRequest, this, std::placeholders::_1, std::placeholders::_2)
-    );        
+    );       
+
+    server->onFailedSending = [&, this](mdsm::Collection data)
+    {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Failed sending data.", getFormattedCurrentTime()
+            );
+        }
+    };
+
+    server->onFailedReading = [&, this](std::optional<boost::system::error_code> error)
+    {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Failed reading data.", getFormattedCurrentTime()
+            );
+        }
+    };  
 
     goPublic();
 
@@ -156,6 +176,31 @@ void ServerApp::onClientConnection(std::shared_ptr<Remote> client)
         Messages::client_connection_request,
         std::bind(&ServerApp::onClientConnected, this, std::placeholders::_1, std::placeholders::_2)
     );
+
+    client->setOnReceiving(
+        Messages::client_credentials_response,
+        std::bind(&ServerApp::onClientCredentialsResponse, this, std::placeholders::_1, std::placeholders::_2)
+    );        
+
+    client->onFailedSending = [&, this](mdsm::Collection data)
+    {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Failed sending data.", getFormattedCurrentTime()
+            );
+        }
+    };
+
+    client->onFailedReading = [&, this](std::optional<boost::system::error_code> error)
+    {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Failed reading data.", getFormattedCurrentTime()
+            );
+        }
+    };       
 }
 
 void ServerApp::onForbiddenClientConnection(std::shared_ptr<Remote> client)
@@ -444,6 +489,7 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
                 << Messages::server_credentials_request
         );
 
+        /*
         std::lock_guard<std::mutex> lock_guard {interface_mutex};
 
         ++players_count;
@@ -472,6 +518,7 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
                 "[{}]: Client disconnected ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
             );
         }
+        */
     }
     else 
     {
@@ -539,4 +586,19 @@ void ServerApp::onServerManagerUnacceptedNameResponse(mdsm::Collection message, 
             "[{}]: Received \"server_manager_unaccepted_server_name\" ({}:{}).", getFormattedCurrentTime(), server_manager.getAddress(), server_manager.getPort()
         );
     }    
+}
+
+void ServerApp::onClientCredentialsResponse(mdsm::Collection message, nets::TcpRemote<Messages> &client)
+{
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"client_credentials_response\" ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+        );
+    } 
+
+    const auto nickname {message.retrieve<std::string>()};
+    const auto password {message.retrieve<std::string>()};
+
+    println("Name: {}, password: {}", nickname, password);
 }

@@ -78,6 +78,16 @@ void ServerManager::onClientConnection(std::shared_ptr<Remote> client)
         }
     };
 
+    client->onFailedReading = [&, this](std::optional<boost::system::error_code> error)
+    {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Failed reading data.", getFormattedCurrentTime()
+            );
+        }
+    };    
+
     while(client->isConnected())
     {
 

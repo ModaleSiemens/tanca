@@ -51,6 +51,8 @@ class ServerApp
         void onServerManagerNameAlreadyUsedResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
         void onServerManagerUnacceptedNameResponse (mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
 
+        void onClientCredentialsResponse(mdsm::Collection message, nets::TcpRemote<Messages>& client);
+
         std::shared_ptr<app::Window> main_window;
 
         std::atomic_bool is_public {false};
