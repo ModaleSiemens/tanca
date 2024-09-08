@@ -32,7 +32,7 @@ Picture.background_image {
 
 EditBox.port_editbox {
     Alignment = Center;
-    DefaultText = "Enter port number";
+    DefaultText = port;
     Position = (20, 30);
     Renderer = &1;
     Size = (360, 36.4);
@@ -42,7 +42,7 @@ EditBox.port_editbox {
 
 EditBox.password_editbox {
     Alignment = Center;
-    DefaultText = "Enter password";
+    DefaultText = password;
     Position = (20, 100);
     Renderer = &1;
     Size = (360, 36.4);
@@ -51,7 +51,7 @@ EditBox.password_editbox {
 
 EditBox.player_limit_editbox {
     Alignment = Center;
-    DefaultText = "Enter player limit";
+    DefaultText = "player limit";
     Position = (20, 170);
     Renderer = &1;
     Size = (360, 36.4);
@@ -59,7 +59,7 @@ EditBox.player_limit_editbox {
 }
 
 Button.start_button {
-    Position = (150, 390);
+    Position = (150, 400);
     Text = "Start!";
     TextSize = 30;
 
@@ -127,4 +127,13 @@ ListBox.saves_listbox {
             TrackColor = #F5F5F5;
         }
     }
+}
+
+EditBox.name_editbox {
+    Alignment = Center;
+    DefaultText = name;
+    Position = (20, 240);
+    Renderer = &1;
+    Size = (360, 36.4);
+    TextSize = 30;
 }

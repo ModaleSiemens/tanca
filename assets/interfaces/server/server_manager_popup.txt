@@ -1,27 +1,5 @@
-Renderer.1 {
-    BackgroundColor = #F5F5F5;
-    BackgroundColorDisabled = #E6E6E6;
-    BackgroundColorHover = white;
-    BorderColor = #3C3C3C;
-    BorderColorDisabled = #7D7D7D;
-    BorderColorHover = black;
-    Borders = (1, 1, 1, 1);
-    CaretColor = black;
-    CaretWidth = 1;
-    DefaultTextColor = #A0A0A0;
-    Padding = (0, 0, 0, 0);
-    SelectedTextBackgroundColor = #006EFF;
-    SelectedTextColor = white;
-    TextColor = #3C3C3C;
-    TextColorDisabled = #7D7D7D;
-    Texture = None;
-    TextureDisabled = None;
-    TextureFocused = None;
-    TextureHover = None;
-}
-
 Picture.background {
-    Size = (505, 257.4);
+    Size = (515, 267.8);
 
     Renderer {
         Texture = "../../images/popup_background.png" Smooth;
@@ -29,28 +7,69 @@ Picture.background {
     }
 }
 
-EditBox.nickname_editbox {
+EditBox.address_editbox {
     Alignment = Center;
-    DefaultText = nickname;
-    Position = (80, 40);
-    Renderer = &1;
-    Size = (330, 36.2);
+    DefaultText = address;
+    Position = (140, 30);
+    Size = (210, 39.4);
     TextSize = 30;
+
+    Renderer {
+        BackgroundColor = #F5F5F5;
+        BackgroundColorDisabled = #E6E6E6;
+        BackgroundColorHover = white;
+        BorderColor = #3C3C3C;
+        BorderColorDisabled = #7D7D7D;
+        BorderColorHover = black;
+        Borders = (1, 1, 1, 1);
+        CaretColor = black;
+        CaretWidth = 1;
+        DefaultTextColor = #A0A0A0;
+        Padding = (0, 0, 0, 0);
+        SelectedTextBackgroundColor = #006EFF;
+        SelectedTextColor = white;
+        TextColor = #3C3C3C;
+        TextColorDisabled = #7D7D7D;
+        Texture = None;
+        TextureDisabled = None;
+        TextureFocused = None;
+        TextureHover = None;
+    }
 }
 
-EditBox.password_editbox {
+EditBox.port_editbox {
     Alignment = Center;
-    DefaultText = password;
-    Position = (80, 110);
-    Renderer = &1;
-    Size = (330, 36.2);
+    DefaultText = port;
+    Position = (140, 90);
+    Size = (210, 39.4);
     TextSize = 30;
+
+    Renderer {
+        BackgroundColor = #F5F5F5;
+        BackgroundColorDisabled = #E6E6E6;
+        BackgroundColorHover = white;
+        BorderColor = #3C3C3C;
+        BorderColorDisabled = #7D7D7D;
+        BorderColorHover = black;
+        Borders = (1, 1, 1, 1);
+        CaretColor = black;
+        CaretWidth = 1;
+        DefaultTextColor = #A0A0A0;
+        Padding = (0, 0, 0, 0);
+        SelectedTextBackgroundColor = #006EFF;
+        SelectedTextColor = white;
+        TextColor = #3C3C3C;
+        TextColorDisabled = #7D7D7D;
+        Texture = None;
+        TextureDisabled = None;
+        TextureFocused = None;
+        TextureHover = None;
+    }
 }
 
-Button.send_button {
-    Position = (270, 180);
-    Size = (190, 46.5);
-    Text = Send;
+Button.abort_button {
+    Position = (110, 160);
+    Text = Abort;
     TextSize = 30;
 
     Renderer {
@@ -78,10 +97,9 @@ Button.send_button {
     }
 }
 
-Button.Button1 {
-    Position = (40, 180);
-    Size = (190, 46.5);
-    Text = Abort;
+Button.save_button {
+    Position = (270, 160);
+    Text = Save;
     TextSize = 30;
 
     Renderer {
