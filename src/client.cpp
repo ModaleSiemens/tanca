@@ -84,13 +84,6 @@ void ClientApp::onConnection(std::shared_ptr<Remote> server)
     {
         if(status == Status::connected_to_server)
         {
-            if(debug)
-            {
-                std::println(
-                    "[{}]: Fully connected to server ({}:{}).", getFormattedCurrentTime(), server->getAddress(), server->getPort()
-                );
-            }
-            std::this_thread::sleep_for(500ms);
         }
     }
 }
@@ -570,6 +563,8 @@ void ClientApp::onServerAddressResponse(mdsm::Collection message, nets::TcpRemot
 
     status = Status::connecting_to_server;
 
+    std::println("{}:{}", getServerAddress(), getServerPort());
+    
     if(connect())
     {
         // Connected to server

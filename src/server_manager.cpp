@@ -203,7 +203,7 @@ void ServerManager::onClientServerAddressRequest(mdsm::Collection message, nets:
             mdsm::Collection{}
                 << Messages::server_manager_server_address_response
                 << servers_data[server_name].address
-                << servers_data[server_name].port
+                << servers_data[server_name].client_port
         );
     }
 }
@@ -248,6 +248,7 @@ void ServerManager::onServerGoPublicRequest(mdsm::Collection message, nets::TcpR
         servers_data[server_name] = ServerData{
             server.getAddress(),
             std::to_string(server.getPort()),
+            message.retrieve<std::string>(),
             message.retrieve<bool>(),
             message.retrieve<std::size_t>(),
             message.retrieve<std::size_t>()
@@ -477,6 +478,8 @@ std::optional<std::string> ServerManager::getServerNameByEndpoint(const std::str
 
 std::shared_ptr<Remote> ServerManager::getServerByName(const std::string_view name)
 {
+    std::println("Searching for server");
+
     auto server_iter {
         std::ranges::find_if(
             getClients(),

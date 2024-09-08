@@ -57,6 +57,7 @@ void ServerApp::goPublic()
             mdsm::Collection{}
                 << Messages::server_go_public
                 << name
+                << port
                 << !password.empty()
                 << players_count.load()
                 << max_players_count
@@ -214,9 +215,10 @@ void ServerApp::setupWelcomeInterface()
         [&, this]
         {
             const auto world_name              {main_window->getWidget<tgui::EditBox>("world_name_editbox")->getText().toStdString()};
-            const auto port                    {main_window->getWidget<tgui::EditBox>("port_editbox")->getText().toStdString()};
             const auto server_password         {main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()};
             const auto server_max_player_count {main_window->getWidget<tgui::EditBox>("max_player_count_editbox")->getText().toStdString()};  
+
+            port = main_window->getWidget<tgui::EditBox>("port_editbox")->getText().toStdString();
 
             const bool world_exists {
                 std::filesystem::exists(std::string{"../data/worlds/"} + world_name) && !world_name.empty()
@@ -492,7 +494,7 @@ void ServerApp::onServerManagerPasswordCheckRequest(mdsm::Collection message, ne
             << (message.retrieve<std::string>() == password)
             << message.retrieve<std::string>()
             << message.retrieve<std::string>()
-            << std::to_string(getPort())
+            << port
     );
 }
 

@@ -56,6 +56,7 @@ class ServerApp
         std::atomic_bool is_public {false};
 
         std::string              name;
+        std::string              port;
         std::string              password;
         std::atomic<std::size_t> players_count;
         std::size_t              max_players_count;
