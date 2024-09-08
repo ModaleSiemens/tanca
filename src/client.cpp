@@ -543,7 +543,7 @@ void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRe
                     20
                 );
             }     
-            else
+            else 
             {
                 popup->removeErrorFromWidget("nickname_editbox");
             }
