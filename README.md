@@ -1,5 +1,5 @@
 # tanca
-C++ multiplayer game.
+C++ singleplayer and multiplayer 2D game.
 
 ## Ideas
 
