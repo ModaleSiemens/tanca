@@ -13,14 +13,15 @@ class Remote : public nets::TcpRemote<Messages>
 
 class PopUp : public app::Window 
 {
-    PopUp(app::Application& app, const std::string_view interface_path);
+    public:
+        PopUp(app::Application& app, const std::string_view interface_path);
 
-    virtual ~PopUp() = default;
+        virtual ~PopUp() = default;
 };
 
 PopUp::PopUp(app::Application& app, const std::string_view interface_path)
 :
-    Window{app, interface_path, sf::VideoMode(200, 75), "Alert!", sf::Style::None}
+    Window{app, interface_path, sf::VideoMode(500, 250), "Alert!", sf::Style::None}
 {
 }
 
@@ -50,6 +51,7 @@ class ClientApp : public app::Application, private nets::TcpClient<Messages, Rem
         void onWrongPassword           (mdsm::Collection message, nets::TcpRemote<Messages>& server);
         void onServerWrongPassword     (mdsm::Collection message, nets::TcpRemote<Messages>& server);
         void onServerAcceptedConnection(mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onServerCredentialsRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server);
 
         void onServerProbe(mdsm::Collection message, nets::TcpRemote<Messages>& server);
 

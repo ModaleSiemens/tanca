@@ -136,6 +136,11 @@ void ClientApp::setupMessageCallbacks()
         Messages::server_probe,
         std::bind(&ClientApp::onServerProbe, this, std::placeholders::_1, std::placeholders::_2)
     );       
+
+    server->setOnReceiving(
+        Messages::server_credentials_request,
+        std::bind(&ClientApp::onServerCredentialsRequest, this, std::placeholders::_1, std::placeholders::_2)
+    );          
 }
 
 void ClientApp::setupWelcomeInterface()
@@ -485,6 +490,61 @@ void ClientApp::onServerAcceptedConnection(mdsm::Collection message, nets::TcpRe
     }
 
     status = Status::connected_to_server;
+}
+
+void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+{
+    addWindow<PopUp>(
+        "credentials_popup", true, "../assets/interfaces/client/credentials_popup.txt"
+    );
+
+    auto popup {
+        getWindow("credentials_popup")
+    };
+
+    popup->getWidget<tgui::Button>("send_button")->onClick(
+        [&, this]
+        {
+            const auto nickname {popup->getWidget<tgui::EditBox>("nickname_editbox")->getText().toStdString()};
+            const auto password {popup->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()};
+
+            if(nickname.empty())
+            {
+                popup->addErrorToWidget(
+                    "nickname_editbox",
+                    "<color=white>Nickname can't be empty!</color>",
+                    25
+                );
+            }     
+            else
+            {
+                popup->removeErrorFromWidget("nickname_editbox");
+            }
+
+            if(password.empty())
+            {
+                popup->addErrorToWidget(
+                    "nickname_editbox",
+                    "<color=white>Nickname can't be empty!</color>",
+                    25
+                );
+            }     
+            else
+            {
+                popup->removeErrorFromWidget("password_editbox");
+            }            
+
+            if(!nickname.empty() && !password.empty())
+            {
+                server.send(
+                    mdsm::Collection{}
+                        << Messages::client_credentials_response
+                        << nickname
+                        << password
+                );
+            }
+        }
+    );
 }
 
 void ClientApp::onServerProbe(mdsm::Collection message, nets::TcpRemote<Messages> &server)

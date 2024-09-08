@@ -437,6 +437,13 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
 
     if((players_count.load() + 1) <= max_players_count || max_players_count <= 0)
     {
+        // Client connected, now ask for credentials
+
+        client.send(
+            mdsm::Collection{}
+                << Messages::server_credentials_request
+        );
+
         std::lock_guard<std::mutex> lock_guard {interface_mutex};
 
         ++players_count;
