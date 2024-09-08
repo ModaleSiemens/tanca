@@ -14,7 +14,9 @@ int main()
 
     while(true)
     {
-        server_app.update({});
+        std::this_thread::sleep_for(16ms);
+
+        server_app.update(16ms);
     }
 
     return 0;

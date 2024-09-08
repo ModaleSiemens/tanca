@@ -14,7 +14,9 @@ int main()
 
     while(true)
     {
-        client_app.update(50ms);
+        std::this_thread::sleep_for(16ms);
+
+        client_app.update(16ms);
     }
 
     return 0;
@@ -55,8 +57,6 @@ void ClientApp::update(const app::Seconds elapsed_seconds)
     std::lock_guard<std::mutex> lock_guard {interface_mutex};
 
     Application::update(elapsed_seconds);
-
-    std::this_thread::sleep_for(16ms);
 }
 
 void ClientApp::onConnection(std::shared_ptr<Remote> server)
