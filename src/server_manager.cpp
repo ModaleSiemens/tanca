@@ -478,8 +478,6 @@ std::optional<std::string> ServerManager::getServerNameByEndpoint(const std::str
 
 std::shared_ptr<Remote> ServerManager::getServerByName(const std::string_view name)
 {
-    std::println("Searching for server");
-
     auto server_iter {
         std::ranges::find_if(
             getClients(),

@@ -562,8 +562,6 @@ void ClientApp::onServerAddressResponse(mdsm::Collection message, nets::TcpRemot
     setServerPort   (message.retrieve<std::string>());
 
     status = Status::connecting_to_server;
-
-    std::println("{}:{}", getServerAddress(), getServerPort());
     
     if(connect())
     {
