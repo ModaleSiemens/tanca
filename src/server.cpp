@@ -39,6 +39,8 @@ ServerApp::ServerApp()
 
 void ServerApp::update(const app::Seconds elapsed_seconds)
 {
+    std::lock_guard<std::mutex> lock_guard {interface_mutex};
+
     Application::update(elapsed_seconds);
 }
 
@@ -435,6 +437,8 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
 
     if((players_count.load() + 1) <= max_players_count || max_players_count <= 0)
     {
+        std::lock_guard<std::mutex> lock_guard {interface_mutex};
+
         ++players_count;
 
         client.send(mdsm::Collection{} << Messages::server_connection_accepted);

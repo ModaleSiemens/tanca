@@ -19,12 +19,14 @@ enum class Messages
     ping_response,
 
     // Messages sent from client
+    client_credentials_response,
     client_server_list_request,
     client_connection_request,
     client_probe,
     client_server_address_request,
 
     // Messages sent from server
+    server_credentials_request,
     server_connection_refused,
     server_password_check_response,
     server_probe,

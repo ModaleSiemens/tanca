@@ -47,7 +47,7 @@ ClientApp::ClientApp()
 
 void ClientApp::update(const app::Seconds elapsed_seconds)
 {
-    if(status == Status::connected_to_server && !main_window->getWidget("chatbox"))
+    if(status == Status::connected_to_server && !main_window->getWidget("chat_chatbox"))
     {
         setupConnectedToServerInterface(); 
     }
@@ -55,6 +55,8 @@ void ClientApp::update(const app::Seconds elapsed_seconds)
     std::lock_guard<std::mutex> lock_guard {interface_mutex};
 
     Application::update(elapsed_seconds);
+
+    std::this_thread::sleep_for(16ms);
 }
 
 void ClientApp::onConnection(std::shared_ptr<Remote> server)

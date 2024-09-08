@@ -64,5 +64,7 @@ class ServerApp
         std::string server_manager_address;
         std::string server_manager_port;
 
+        std::mutex interface_mutex;
+
         bool debug {true};
 };
