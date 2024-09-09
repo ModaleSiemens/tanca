@@ -8,9 +8,9 @@ Picture.background_image {
     }
 }
 
-Button.stop_button {
+Button.close_button {
     Position = (20, 450);
-    Text = "Stop!";
+    Text = "Close!";
     TextSize = 30;
 
     Renderer {

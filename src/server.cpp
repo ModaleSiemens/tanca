@@ -219,6 +219,13 @@ void ServerApp::setupRunningInterface()
 {
     main_window->loadWidgetsFromFile("../assets/interfaces/server/running.txt");
 
+    main_window->getWidget<tgui::Button>("close_button")->onClick(
+        [&, this]
+        {
+            closeServer();
+        }
+    );
+
     main_window->getWidget<tgui::ToggleButton>("public_toggle_button")->onToggle(
         [&, this]
         {
@@ -242,7 +249,7 @@ void ServerApp::setupWelcomeInterface()
         [&, this]
         {
             const auto server_password     {main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()};
-            const auto server_player_limit {main_window->getWidget<tgui::EditBox>("max_player_count_editbox")->getText().toStdString()};  
+            const auto server_player_limit {main_window->getWidget<tgui::EditBox>("player_limit_editbox")->getText().toStdString()};  
             const auto server_name         {main_window->getWidget<tgui::EditBox>("name_editbox")->getText().toStdString()};
 
             port = main_window->getWidget<tgui::EditBox>("port_editbox")->getText().toStdString();
@@ -264,7 +271,7 @@ void ServerApp::setupWelcomeInterface()
             if(server_name.empty())
             {
                 main_window->addErrorToWidget(
-                    "port_editbox",
+                    "name_editbox",
                     "<color=white>Server name can't be empty!</color>",
                     20,
                     25
@@ -275,7 +282,7 @@ void ServerApp::setupWelcomeInterface()
                 main_window->removeErrorFromWidget("name_editbox");
             }             
 
-            if(!port.empty())
+            if(!port.empty() && !server_name.empty())
             {
                 setIpVersion(nets::IPVersion::ipv4);
                 setPort(std::stoull(port));
@@ -491,4 +498,9 @@ void ServerApp::onClientCredentialsResponse(mdsm::Collection message, nets::TcpR
     const auto password {message.retrieve<std::string>()};
 
     println("Name: {}, password: {}", nickname, password);
+}
+
+void ServerApp::closeServer()
+{
+    std::exit(0);
 }

@@ -53,6 +53,8 @@ class ServerApp
 
         void onClientCredentialsResponse(mdsm::Collection message, nets::TcpRemote<Messages>& client);
 
+        void closeServer();
+
         std::shared_ptr<app::Window> main_window;
 
         std::atomic_bool is_public {false};
