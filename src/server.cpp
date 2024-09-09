@@ -64,7 +64,7 @@ void ServerApp::goPublic()
                 << port
                 << !password.empty()
                 << players_count.load()
-                << max_players_count
+                << player_limit
         );
     }
 }
@@ -157,8 +157,6 @@ void ServerApp::onConnection(std::shared_ptr<Remote> server)
         }
     };  
 
-    goPublic();
-
     while(true)
     {
 
@@ -226,17 +224,110 @@ void ServerApp::setupRunningInterface()
         }
     );
 
-    main_window->getWidget<tgui::ToggleButton>("public_toggle_button")->onToggle(
+    main_window->getWidget<tgui::Button>("visibility_button")->onClick(
         [&, this]
-        {
-            if(is_public)
-            {   
-                goPrivate();
-            }
-            else 
-            {
-                goPublic();
-            }
+        {   
+            std::println("Clicked!");
+
+            addWindow<PopUp>(
+                "server_manager_popup", true, "../assets/interfaces/server/server_manager_popup.txt"
+            );
+
+            auto popup {getWindow("server_manager_popup")};
+
+            popup->getWidget<tgui::EditBox>("address_editbox")->setText(
+                std::string{getServerAddress()}
+            );
+
+            popup->getWidget<tgui::EditBox>("port_editbox")->setText(
+                std::string{getServerPort()}
+            );            
+
+            popup->getWidget<tgui::Button>("abort_button")->onClick(
+                [&, popup, this]   
+                {
+                    addWindowToRemoveList(popup);
+                }
+            );          
+
+            popup->getWidget<tgui::Button>("go_button")->onClick(
+                [&, popup, this]
+                {
+                    const auto new_server_manager_address {
+                        popup->getWidget<tgui::EditBox>("address_editbox")->getText().toStdString()
+                    };
+
+                    const auto new_server_manager_port {
+                        popup->getWidget<tgui::EditBox>("port_editbox")->getText().toStdString()
+                    };                    
+
+                    if(!isValidAddress(new_server_manager_address))
+                    {
+                        popup->addErrorToWidget(
+                            "address_editbox",
+                            "<color=white>Invalid address!!</color>",
+                            20,
+                            25
+                        );
+                    }
+                    else 
+                    {
+                        popup->removeErrorFromWidget("address_editbox");
+                    }
+
+                    if(!isValidPort(new_server_manager_port))
+                    {
+                        popup->addErrorToWidget(
+                            "port_editbox",
+                            "<color=white>Invalid port!</color>",
+                            20,
+                            25
+                        );
+                    }
+                    else 
+                    {
+                        popup->removeErrorFromWidget("port_editbox");
+                    }            
+
+                    if(isValidAddress(new_server_manager_address) && isValidPort(new_server_manager_port))
+                    {
+                        if(new_server_manager_address != getServerAddress() && new_server_manager_port != getServerPort())
+                        {
+                            if(server->isConnected())
+                            {
+                                disconnect();
+                            }
+
+                            setServerAddress(new_server_manager_address);
+                            setServerPort(new_server_manager_port);
+
+                            if(connect())
+                            {
+                            }
+                            else
+                            {
+                                popup->addErrorToWidget(
+                                    "go_button",
+                                    "<color=white>Couldn't connect...</color>",
+                                    20,
+                                    25
+                                );
+                            }                                                                                 
+                        }
+
+                        if(is_public)
+                        {
+                            goPrivate();
+                        }
+                        else 
+                        {
+                            goPublic();
+                        }
+
+                        std::println("{}", addWindowToRemoveList(popup));                                                            
+                    }                            
+                }
+            );
         }
     );
 }
@@ -248,11 +339,10 @@ void ServerApp::setupWelcomeInterface()
     main_window->getWidget<tgui::Button>("start_button")->onClick(
         [&, this]
         {
-            const auto server_password     {main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()};
-            const auto server_player_limit {main_window->getWidget<tgui::EditBox>("player_limit_editbox")->getText().toStdString()};  
-            const auto server_name         {main_window->getWidget<tgui::EditBox>("name_editbox")->getText().toStdString()};
-
-            port = main_window->getWidget<tgui::EditBox>("port_editbox")->getText().toStdString();
+            password     = main_window->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString();
+            player_limit = main_window->getWidget<tgui::EditBox>("player_limit_editbox")->getText().toUInt(0);  
+            name         = main_window->getWidget<tgui::EditBox>("name_editbox")->getText().toStdString();
+            port         = main_window->getWidget<tgui::EditBox>("port_editbox")->getText().toStdString();
 
             if(port.empty())
             {
@@ -268,7 +358,7 @@ void ServerApp::setupWelcomeInterface()
                 main_window->removeErrorFromWidget("port_editbox");
             } 
 
-            if(server_name.empty())
+            if(name.empty())
             {
                 main_window->addErrorToWidget(
                     "name_editbox",
@@ -281,14 +371,13 @@ void ServerApp::setupWelcomeInterface()
             {
                 main_window->removeErrorFromWidget("name_editbox");
             }             
+            
 
-            if(!port.empty() && !server_name.empty())
+            if(!port.empty() && !name.empty())
             {
                 setIpVersion(nets::IPVersion::ipv4);
                 setPort(std::stoull(port));
 
-                password = server_password;
-                max_players_count = server_player_limit == "" ? 0 : std::stoull(server_player_limit);
                 players_count = 0;
 
                 startAccepting();
@@ -314,9 +403,9 @@ void ServerApp::onServerAddedToList(mdsm::Collection message, nets::TcpRemote<Me
 {
     is_public = true;
 
-    if(auto public_toggle {main_window->getWidget<tgui::ToggleButton>("public_toggle_button")})
+    if(auto visibility_button {main_window->getWidget<tgui::Button>("visibility_button")})
     {
-        public_toggle->setDown(true);
+        visibility_button->setText("Go private!");
     }
 
     if(debug)
@@ -331,10 +420,10 @@ void ServerApp::onServerRemovedFromList(mdsm::Collection message, nets::TcpRemot
 {
     is_public = false;
 
-    if(auto public_toggle {main_window->getWidget<tgui::ToggleButton>("public_toggle_button")})
+    if(auto visibility_button {main_window->getWidget<tgui::Button>("visibility_button")})
     {
-        public_toggle->setDown(false);
-    }    
+        visibility_button->setText("Go public!");
+    }
 
     if(debug)
     {
@@ -346,7 +435,7 @@ void ServerApp::onServerRemovedFromList(mdsm::Collection message, nets::TcpRemot
 
 void ServerApp::onServerManagerServerNotFoundResponse(mdsm::Collection message, nets::TcpRemote<Messages> &server_manager)
 {   
-    is_public = false;
+    //is_public = false;
 
     if(debug)
     {
@@ -377,7 +466,7 @@ void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Mess
         }
     }
 
-    if((players_count.load() + 1) <= max_players_count || max_players_count <= 0)
+    if((players_count.load() + 1) <= player_limit || player_limit <= 0)
     {
         // Client connected, now ask for credentials
 

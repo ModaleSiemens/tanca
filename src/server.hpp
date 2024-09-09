@@ -63,10 +63,10 @@ class ServerApp
         std::string              port;
         std::string              password;
         std::atomic<std::size_t> players_count;
-        std::size_t              max_players_count;
+        std::size_t              player_limit;
 
-        std::string server_manager_address;
-        std::string server_manager_port;
+        std::string server_manager_address {""};
+        std::string server_manager_port    {""};
 
         std::mutex interface_mutex;
 
