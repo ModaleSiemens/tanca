@@ -447,79 +447,69 @@ void ServerApp::onServerManagerServerNotFoundResponse(mdsm::Collection message, 
 
 void ServerApp::onClientConnected(mdsm::Collection message, nets::TcpRemote<Messages>& client)
 {
-    if(!password.empty())
+    if(clientAddressIsBanned(client.getAddress()))
     {
-        if(message.retrieve<std::string>() != password)
-        {   
+        if(debug)
+        {
+            std::println(
+                "[{}]: Sending \"server_client_banned\" ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+            );
+        } 
+
+        client.send(mdsm::Collection{} << Messages::server_client_banned);
+    }
+    else 
+    {
+        if(!password.empty())
+        {
+            if(message.retrieve<std::string>() != password)
+            {   
+                if(debug)
+                {
+                    std::println(
+                        "[{}]: Sending \"server_wrong_password\" ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+                    );
+                }
+
+                client.send(mdsm::Collection{} << Messages::server_wrong_password);
+
+                client.stop();
+
+                return;
+            }
+        }
+
+        if((players_count.load() + 1) <= player_limit || player_limit <= 0)
+        {
+            // Client connected, now ask for credentials
+
             if(debug)
             {
                 std::println(
-                    "[{}]: Received password is wrong ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+                    "[{}]: Sending \"server_credentials_request\" ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+                );
+            }    
+
+            client.send(
+                mdsm::Collection{}
+                    << Messages::server_credentials_request
+            );
+        }
+        else 
+        {
+            client.send(mdsm::Collection{} << Messages::server_full);
+
+            if(debug)
+            {
+                std::println(
+                    "[{}]: Server is full ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
                 );
             }
-
-            client.send(mdsm::Collection{} << Messages::server_wrong_password);
 
             client.stop();
 
             return;
         }
-    }
-
-    if((players_count.load() + 1) <= player_limit || player_limit <= 0)
-    {
-        // Client connected, now ask for credentials
-
-        client.send(
-            mdsm::Collection{}
-                << Messages::server_credentials_request
-        );
-
-        /*
-        std::lock_guard<std::mutex> lock_guard {interface_mutex};
-
-        ++players_count;
-
-        client.send(mdsm::Collection{} << Messages::server_connection_accepted);
-
-        while(client.isConnected())
-        {
-            if(debug)
-            {
-                std::println(
-                    "[{}]: Probing client ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
-                );
-            }
-
-            client.send(mdsm::Collection{} << Messages::server_probe);
-
-            std::this_thread::sleep_for(TcpClient::PingTime{2});
-        }
-
-        --players_count;
-
-        if(debug)
-        {
-            std::println(
-                "[{}]: Client disconnected ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
-            );
-        }
-        */
-    }
-    else 
-    {
-        client.send(mdsm::Collection{} << Messages::server_full);
-
-        if(debug)
-        {
-            std::println(
-                "[{}]: Server is full ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
-            );
-        }
-
-        client.stop();
-
-        return;
     }
 }
 
@@ -586,10 +576,94 @@ void ServerApp::onClientCredentialsResponse(mdsm::Collection message, nets::TcpR
     const auto nickname {message.retrieve<std::string>()};
     const auto password {message.retrieve<std::string>()};
 
-    println("Name: {}, password: {}", nickname, password);
+    if(clientNicknameIsBanned(nickname))
+    {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Sending \"server_client_banned\" ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+            );
+        } 
+
+        client.send(mdsm::Collection{} << Messages::server_client_banned);
+    }
+    else if(validateClientCredentials(nickname, password))
+    {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Sending \"server_client_is_welcome\" ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+            );
+        }
+
+        client.send(
+            mdsm::Collection{}
+                << Messages::server_client_is_welcome
+        );
+
+        ++players_count;
+
+        processClient(client);
+    }
+    else 
+    {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Sending \"server_client_wrong_credentials\" ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+            );
+        } 
+
+        client.send(
+            mdsm::Collection{}
+                << Messages::server_client_wrong_credentials
+        );
+    }
+      
+}
+
+bool ServerApp::clientNicknameIsBanned(const std::string_view nickname)
+{
+    return false;
+}
+
+bool ServerApp::clientAddressIsBanned(const std::string_view address)
+{
+    return false;
+}
+
+bool ServerApp::validateClientCredentials(const std::string_view nickname, const std::string_view password)
+{
+    return nickname == password;
 }
 
 void ServerApp::closeServer()
 {
     std::exit(0);
+}
+
+void ServerApp::processClient(nets::TcpRemote<Messages>& client)
+{
+    while(client.isConnected())
+    {
+        if(debug)
+        {
+            std::println(
+                "[{}]: Probing client ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+            );
+        }
+
+        client.send(mdsm::Collection{} << Messages::server_probe);
+
+        std::this_thread::sleep_for(TcpClient::PingTime{2});
+    }
+
+    --players_count;
+
+    if(debug)
+    {
+        std::println(
+            "[{}]: Client disconnected ({}:{}).", getFormattedCurrentTime(), client.getAddress(), client.getPort()
+        );
+    }
 }

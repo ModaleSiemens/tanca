@@ -26,6 +26,9 @@ enum class Messages
     client_server_address_request,
 
     // Messages sent from server
+    server_client_is_welcome,
+    server_client_banned,
+    server_client_wrong_credentials,
     server_credentials_request,
     server_connection_refused,
     server_password_check_response,

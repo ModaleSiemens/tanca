@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+#include <boost/json.hpp>
+
 #include "app.hpp"
 #include "nets.hpp"
 
@@ -53,6 +56,12 @@ class ServerApp
 
         void onClientCredentialsResponse(mdsm::Collection message, nets::TcpRemote<Messages>& client);
 
+        bool clientNicknameIsBanned(const std::string_view nickname);
+        bool clientAddressIsBanned(const std::string_view address);
+        bool validateClientCredentials(const std::string_view nickname, const std::string_view password);
+
+        void processClient(nets::TcpRemote<Messages>& client);
+
         void closeServer();
 
         std::shared_ptr<app::Window> main_window;
@@ -71,4 +80,14 @@ class ServerApp
         std::mutex interface_mutex;
 
         bool debug {true};
+
+        struct player_data
+        {
+            std::shared_ptr<Remote> remote;
+        };
+
+        /* Map is ordered to enable sorted listing of players
+        *  key is nickname
+        */ 
+        std::map<std::string, player_data> players;
 };
