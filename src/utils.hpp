@@ -5,6 +5,8 @@
 #include <chrono>
 #include <boost/asio.hpp>
 
+#include "app.hpp"
+
 bool isValidIPv4Address(const std::string_view address)
 {
     boost::system::error_code error;
@@ -51,4 +53,18 @@ std::string getFormattedCurrentTime()
         "{:%Y-%m-%d %X}",
         std::chrono::current_zone()->to_local(std::chrono::system_clock::now())
     );
+}
+
+class PopUp : public app::Window 
+{
+    public:
+        PopUp(app::Application& app, const std::string_view interface_path);
+
+        virtual ~PopUp() = default;
+};
+
+PopUp::PopUp(app::Application& app, const std::string_view interface_path)
+:
+    Window{app, interface_path, sf::VideoMode(500, 250), "Alert!", sf::Style::None}
+{
 }

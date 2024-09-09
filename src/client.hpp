@@ -1,29 +1,15 @@
 #pragma once
 
-#include "app.hpp"
 #include "nets.hpp"
 
 #include "messages.hpp"
+#include "utils.hpp"
 
 class Remote : public nets::TcpRemote<Messages>
 {
     public:
         using TcpRemote<Messages>::TcpRemote;
 };
-
-class PopUp : public app::Window 
-{
-    public:
-        PopUp(app::Application& app, const std::string_view interface_path);
-
-        virtual ~PopUp() = default;
-};
-
-PopUp::PopUp(app::Application& app, const std::string_view interface_path)
-:
-    Window{app, interface_path, sf::VideoMode(500, 250), "Alert!", sf::Style::None}
-{
-}
 
 class ClientApp : public app::Application, private nets::TcpClient<Messages, Remote>
 {
