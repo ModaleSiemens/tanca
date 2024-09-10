@@ -54,18 +54,22 @@ Picture.background_image {
 }
 
 EditBox.address_editbox {
-    DefaultText = "Enter server manager address...";
+    Alignment = Center;
+    DefaultText = "server manager address";
     Position = (140, 80);
     Renderer = &1;
     Size = (500, 57.8);
+    Text = "127.0.0.1";
     TextSize = 30;
 }
 
 EditBox.port_editbox {
+    Alignment = Center;
     DefaultText = "Enter server manager port...";
-    Position = (170, 210);
+    Position = (140, 210);
     Renderer = &1;
-    Size = (440, 57.8);
+    Size = (500, 57.8);
+    Text = 50000;
     TextSize = 30;
 }
 

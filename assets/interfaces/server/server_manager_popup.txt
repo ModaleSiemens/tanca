@@ -59,6 +59,7 @@ EditBox.address_editbox {
     Position = (140, 30);
     Renderer = &1;
     Size = (210, 39.4);
+    Text = "127.0.0.1";
     TextSize = 30;
 }
 
@@ -68,6 +69,7 @@ EditBox.port_editbox {
     Position = (140, 100);
     Renderer = &1;
     Size = (210, 39.4);
+    Text = 50000;
     TextSize = 30;
 }
 
