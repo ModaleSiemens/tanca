@@ -38,6 +38,9 @@ class ClientApp : public app::Application, private nets::TcpClient<Messages, Rem
         void onServerWrongPassword     (mdsm::Collection message, nets::TcpRemote<Messages>& server);
         void onServerAcceptedConnection(mdsm::Collection message, nets::TcpRemote<Messages>& server);
         void onServerCredentialsRequest(mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onServerWrongCredentials  (mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onServerClientIsBanned    (mdsm::Collection message, nets::TcpRemote<Messages>& server);
+        void onServerClientIsWelcome   (mdsm::Collection message, nets::TcpRemote<Messages>& server);
 
         void onServerProbe(mdsm::Collection message, nets::TcpRemote<Messages>& server);
 

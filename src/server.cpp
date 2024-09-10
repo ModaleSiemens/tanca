@@ -235,6 +235,8 @@ void ServerApp::setupRunningInterface()
 
             auto popup {getWindow("server_manager_popup")};
 
+            popup->setTitle("Enter server manager data!");
+
             popup->getWidget<tgui::EditBox>("address_editbox")->setText(
                 std::string{getServerAddress()}
             );
@@ -301,30 +303,24 @@ void ServerApp::setupRunningInterface()
                             setServerAddress(new_server_manager_address);
                             setServerPort(new_server_manager_port);
 
-                            if(connect())
-                            {
-                            }
-                            else
-                            {
-                                popup->addErrorToWidget(
-                                    "go_button",
-                                    "<color=white>Couldn't connect...</color>",
-                                    20,
-                                    25
-                                );
-                            }                                                                                 
+                            connect();
                         }
 
-                        if(is_public)
+                        if(server->isConnected())
                         {
-                            goPrivate();
-                        }
+                            if(is_public)
+                            {
+                                goPrivate();
+                            }
+                            else 
+                            {
+                                goPublic();
+                            }     
+                        }       
                         else 
                         {
-                            goPublic();
-                        }
-
-                        std::println("{}", addWindowToRemoveList(popup));                                                            
+                            popup->setTitle("Failed to connect to server manager!");
+                        }                                              
                     }                            
                 }
             );
@@ -401,6 +397,8 @@ void ServerApp::onServerManagerConnectionRefused(mdsm::Collection message, nets:
 
 void ServerApp::onServerAddedToList(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
+    addWindowToRemoveList(getWindow("server_manager_popup"));
+
     is_public = true;
 
     if(auto visibility_button {main_window->getWidget<tgui::Button>("visibility_button")})
@@ -418,6 +416,8 @@ void ServerApp::onServerAddedToList(mdsm::Collection message, nets::TcpRemote<Me
 
 void ServerApp::onServerRemovedFromList(mdsm::Collection message, nets::TcpRemote<Messages>& server)
 {
+    addWindowToRemoveList(getWindow("server_manager_popup"));
+
     is_public = false;
 
     if(auto visibility_button {main_window->getWidget<tgui::Button>("visibility_button")})
@@ -624,7 +624,7 @@ void ServerApp::onClientCredentialsResponse(mdsm::Collection message, nets::TcpR
 
 bool ServerApp::clientNicknameIsBanned(const std::string_view nickname)
 {
-    return false;
+    return nickname == "andrea";
 }
 
 bool ServerApp::clientAddressIsBanned(const std::string_view address)

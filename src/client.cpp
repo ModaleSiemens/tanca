@@ -140,7 +140,22 @@ void ClientApp::setupMessageCallbacks()
     server->setOnReceiving(
         Messages::server_credentials_request,
         std::bind(&ClientApp::onServerCredentialsRequest, this, std::placeholders::_1, std::placeholders::_2)
+    );     
+
+    server->setOnReceiving(
+        Messages::server_client_banned,
+        std::bind(&ClientApp::onServerClientIsBanned, this, std::placeholders::_1, std::placeholders::_2)
     );          
+
+    server->setOnReceiving(
+        Messages::server_client_wrong_credentials,
+        std::bind(&ClientApp::onServerWrongCredentials, this, std::placeholders::_1, std::placeholders::_2)
+    ); 
+
+    server->setOnReceiving(
+        Messages::server_client_is_welcome,
+        std::bind(&ClientApp::onServerClientIsWelcome, this, std::placeholders::_1, std::placeholders::_2)
+    );     
 
     server->onFailedSending = [&, this](mdsm::Collection data)
     {
@@ -524,14 +539,41 @@ void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRe
     addWindow<PopUp>(
         "credentials_popup", true, "../assets/interfaces/client/credentials_popup.txt"
     );
+    
+    auto popup {
+        getWindow("credentials_popup")
+    };    
 
-    getWindow("credentials_popup")->getWidget<tgui::Button>("send_button")->onClick(
-        [&, this]
+    popup->setTitle("Enter credentials!");
+
+    popup->getWidget<tgui::Button>("abort_button")->onClick(
+        [&, popup, this]
         {
-            auto popup {
-                getWindow("credentials_popup")
-            };
+            addWindowToRemoveList(popup);
 
+            disconnect();
+
+            status = Status::not_connected;
+
+            setServerAddress(server_manager_address);
+            setServerPort(server_manager_port);
+
+            if(connect())
+            {
+                status = Status::connected_to_server_manager;
+
+                setupByNamePromptInterface();
+            }
+            else 
+            {
+                setupServerManagerPromptInterface();
+            }
+        }
+    );
+
+    popup->getWidget<tgui::Button>("send_button")->onClick(
+        [&, popup, this]
+        {
             const auto nickname {popup->getWidget<tgui::EditBox>("nickname_editbox")->getText().toStdString()};
             const auto password {popup->getWidget<tgui::EditBox>("password_editbox")->getText().toStdString()};
 
@@ -563,8 +605,6 @@ void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRe
 
             if(!nickname.empty() && !password.empty())
             {
-                std::println("Here");
-
                 this->server->send(
                     mdsm::Collection{}
                         << Messages::client_credentials_response
@@ -574,6 +614,44 @@ void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRe
             }
         }
     );
+}
+
+void ClientApp::onServerWrongCredentials(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+{
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_client_wrong_credentials\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }
+
+    getWindow("credentials_popup")->setTitle("Wrong credentials!");
+}
+
+void ClientApp::onServerClientIsBanned(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+{
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_client_banned\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }    
+
+    getWindow("credentials_popup")->setTitle("You were banned from the server!");
+}
+
+void ClientApp::onServerClientIsWelcome(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+{
+    if(debug)
+    {
+        std::println(
+            "[{}]: Received \"server_client_is_welcome\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
+        );
+    }    
+
+    addWindowToRemoveList(getWindow("credentials_popup"));
+
+    setupConnectedToServerInterface();
 }
 
 void ClientApp::onServerProbe(mdsm::Collection message, nets::TcpRemote<Messages> &server)
