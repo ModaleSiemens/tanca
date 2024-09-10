@@ -65,6 +65,6 @@ class PopUp : public app::Window
 
 PopUp::PopUp(app::Application& app, const std::string_view interface_path)
 :
-    Window{app, interface_path, sf::VideoMode(500, 250), "Alert!", sf::Style::None}
+    Window{app, interface_path, sf::VideoMode(500, 250), "Alert!", sf::Style::Titlebar}
 {
 }
