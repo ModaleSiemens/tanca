@@ -6,8 +6,13 @@ project(
     
     default_options: [
         'cpp_std=c++23',
-        'buildtype=release'
+        'buildtype=debug'
     ]
+)
+
+add_project_link_arguments(
+    '-lstdc++exp',
+    language: 'cpp'
 )
 
 libapp_proj  = subproject('app')
@@ -24,34 +29,19 @@ executable(
     'client',
     client_src,
 
-    dependencies: deps,
-
-    link_args: 
-    [
-        '-lstdc++exp' # Enable std::print, std::println
-    ]    
+    dependencies: deps  
 )
 
 executable(
     'server',
     server_src,
 
-    dependencies: deps,
-
-    link_args: 
-    [
-        '-lstdc++exp' # Enable std::print, std::println
-    ]    
+    dependencies: deps
 )
 
 executable(
     'server_manager',
     server_manager_src,
 
-    dependencies: deps,
-
-    link_args: 
-    [
-        '-lstdc++exp' # Enable std::print, std::println
-    ]    
+    dependencies: deps
 )
