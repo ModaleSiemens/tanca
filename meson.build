@@ -25,23 +25,34 @@ deps = [
 
 subdir('src')
 
+install_subdir(
+    'assets',
+    install_dir: '.'
+)
+
 executable(
     'client',
     client_src,
 
-    dependencies: deps  
+    dependencies: deps,
+
+    install: true  
 )
 
 executable(
     'server',
     server_src,
 
-    dependencies: deps
+    dependencies: deps,
+
+    install: true
 )
 
 executable(
     'server_manager',
     server_manager_src,
 
-    dependencies: deps
+    dependencies: deps,
+
+    install: true
 )
