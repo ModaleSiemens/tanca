@@ -47,11 +47,21 @@ bool isValidPort(const std::string_view port)
     }
 }
 
-std::string getFormattedCurrentTime()
+std::string getFormattedTime(const std::chrono::duration<double> time)
 {
     return std::format(
-        "{:%Y-%m-%d %X}",
-        std::chrono::current_zone()->to_local(std::chrono::system_clock::now())
+        //"{:%Y-%m-%d %X}",
+        "{}",
+        time
+    );
+}
+
+std::string getFormattedCurrentTime()
+{
+    using namespace std::chrono;
+
+    return getFormattedTime(
+        duration_cast<std::chrono::duration<double>>(system_clock::now().time_since_epoch())
     );
 }
 
