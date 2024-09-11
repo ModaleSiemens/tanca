@@ -1,0 +1,8 @@
+Picture.background {
+    Size = (505, 252.2);
+
+    Renderer {
+        Texture = "../../images/popup_background.png" Smooth;
+        TransparentTexture = false;
+    }
+}

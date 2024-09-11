@@ -2,7 +2,7 @@
 
 #include "nets.hpp"
 
-#include "messages.hpp"
+#include "../messages.hpp"
 
 #include <unordered_map>
 

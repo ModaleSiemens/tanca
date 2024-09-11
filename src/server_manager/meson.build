@@ -1,0 +1,1 @@
+server_manager_src = files('server_manager.cpp')

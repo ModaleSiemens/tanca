@@ -1,10 +1,11 @@
 #include "server.hpp"
 
-#include "utils.hpp"
+#include "../utils.hpp"
 
 #include <filesystem>
 #include <thread>
 #include <chrono>
+#include <boost/json/src.hpp>
 
 using namespace std::chrono_literals;
 
@@ -227,8 +228,6 @@ void ServerApp::setupRunningInterface()
     main_window->getWidget<tgui::Button>("visibility_button")->onClick(
         [&, this]
         {   
-            std::println("Clicked!");
-
             addWindow<PopUp>(
                 "server_manager_popup", true, "../assets/interfaces/server/server_manager_popup.txt"
             );
@@ -328,9 +327,60 @@ void ServerApp::setupRunningInterface()
     );
 }
 
+void ServerApp::updateSavesList()
+{
+    auto saves_list {main_window->getWidget<tgui::ListView>("saves_listview")};
+
+    for(const auto& dir_entry : std::filesystem::directory_iterator{saves_folder})
+    {
+
+    }
+}
+
+void ServerApp::showEditSavePopup()
+{
+    addWindow<PopUp>(
+        "edit_save_popup", true, "../assets/interfaces/server/edit_save_popup.txt"
+    );
+
+    auto popup {getWindow("edit_save_popup")};
+
+    popup->setSize({600, 400});
+    popup->setTitle("Edit save!");
+
+    popup->getWidget<tgui::Button>("abort_button")->onClick(
+        [&, popup, this]   
+        {
+            addWindowToRemoveList(popup);
+        }
+    );  
+
+    popup->getWidget<tgui::Button>("save_button")->onClick(
+        [&, popup, this]
+        {
+
+        }
+    );
+}
+
+void ServerApp::createNewSave()
+{
+    std::filesystem::create_directory(saves_folder / new_world_name);
+
+    
+
+}
+
 void ServerApp::setupWelcomeInterface()
 {
     main_window->loadWidgetsFromFile("../assets/interfaces/server/setup.txt");
+
+    main_window->getWidget<tgui::Button>("new_save_button")->onClick(
+        [&, this]
+        {
+            showEditSavePopup();
+        }
+    );
 
     main_window->getWidget<tgui::Button>("start_button")->onClick(
         [&, this]

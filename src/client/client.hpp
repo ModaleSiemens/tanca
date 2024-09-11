@@ -2,8 +2,8 @@
 
 #include "nets.hpp"
 
-#include "messages.hpp"
-#include "utils.hpp"
+#include "../messages.hpp"
+#include "../utils.hpp"
 
 class Remote : public nets::TcpRemote<Messages>
 {

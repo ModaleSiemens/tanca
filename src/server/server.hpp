@@ -6,7 +6,7 @@
 #include "app.hpp"
 #include "nets.hpp"
 
-#include "messages.hpp"
+#include "../messages.hpp"
 
 class Remote : public nets::TcpRemote<Messages>
 {
@@ -36,6 +36,10 @@ class ServerApp
         virtual void onClientConnection         (std::shared_ptr<Remote> client) override;  
         virtual void onForbiddenClientConnection(std::shared_ptr<Remote> client) override;
 
+        void createNewSave();
+
+        void showEditSavePopup();
+
         void setupMessageCallbacks();
 
         void setupWelcomeInterface();
@@ -64,6 +68,8 @@ class ServerApp
 
         void closeServer();
 
+        void updateSavesList();
+
         std::shared_ptr<app::Window> main_window;
 
         std::atomic_bool is_public {false};
@@ -86,8 +92,17 @@ class ServerApp
             std::shared_ptr<Remote> remote;
         };
 
-        /* Map is ordered to enable sorted listing of players
-        *  key is nickname
+        /*
+            Map is ordered to enable sorted listing of players
+            The key is the nickname
         */ 
         std::map<std::string, player_data> players;
+
+        /*
+            Constant used in the new world creation, selection and editing process
+        */
+        const std::string_view new_world_name {"new_world"};
+
+        const std::filesystem::path saves_folder  {"../saves"};
+        const std::filesystem::path assets_folder {"../assets"};
 };
