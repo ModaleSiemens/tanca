@@ -4,7 +4,6 @@
 #include <chrono>
 #include <filesystem>
 #include <optional>
-#include <boost/json/src.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -24,14 +23,14 @@ class SavesManager
 {
     public:
         using Date = std::chrono::time_point<std::chrono::system_clock>; 
-        using Seconds = std::chrono::duration<double>;
+        using Seconds = std::chrono::seconds;
 
         struct Save 
         {
             std::string name;
-            Date        creation_date;
-            Date        last_played_date;
-            Seconds     played_time_seconds;
+            std::string creation_date;
+            std::string last_played_date;
+            std::size_t played_time_seconds;
             std::string whitelist;
             std::string blacklist;
         };
@@ -49,7 +48,8 @@ class SavesManager
 
         bool deleteSave (const std::string_view save_name);
 
-        std::vector<Save> getSaves();
+        std::optional<Save> getSave(const std::string_view name);
+        std::vector<Save>   getSaves();
 
     private:
         void assureSavesDirectoryExist();
@@ -57,10 +57,12 @@ class SavesManager
 
         std::filesystem::path saves_path;
 
-        void                        writeInfoToSave(const std::string_view save_name, const boost::property_tree::ptree& info);
+        void                        writeInfoToSave (const std::filesystem::path save_path, const boost::property_tree::ptree& info);
         boost::property_tree::ptree readInfoFromSave(const std::filesystem::path save_path);
 
         std::optional<std::filesystem::path> getSavePath(const std::string_view name);
 
         void createSaveDirectory(const std::string_view name);
+
+        std::string generateSaveDirectoryName(const std::string_view save_name);
 };

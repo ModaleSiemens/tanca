@@ -52,6 +52,33 @@ boost::property_tree::ptree SavesManager::readInfoFromSave(const std::filesystem
     }
 }
 
+std::optional<SavesManager::Save> SavesManager::getSave(const std::string_view name)
+{
+    using namespace std::chrono;
+
+    const auto save_path {getSavePath(name)};
+
+    if(!save_path)
+    {
+        return std::nullopt;
+    }
+    else 
+    {
+        const auto info {readInfoFromSave(*getSavePath(name))};
+
+        return {
+            Save {
+                info.get<std::string>("name"),
+                info.get<std::string>("creation_date"),
+                info.get<std::string>("last_played_date"),
+                info.get<std::size_t>("played_time_seconds"),
+                info.get<std::string>("whitelist"),
+                info.get<std::string>("blacklist")
+            }
+        };
+    }
+}
+
 
 std::vector<SavesManager::Save> SavesManager::getSaves()
 {
@@ -65,9 +92,11 @@ std::vector<SavesManager::Save> SavesManager::getSaves()
         
         saves.emplace_back(
             info.get<std::string>("name"),
-            static_cast<system_clock::time_point>(static_cast<seconds>(info.get<std::size_t>("creation_date"))),
-            static_cast<system_clock::time_point>(static_cast<seconds>(info.get<std::size_t>("last_played_date"))),
-            static_cast<seconds>(info.get<std::size_t>("played_time_seconds"))
+            info.get<std::string>("creation_date"),
+            info.get<std::string>("last_played_date"),
+            info.get<size_t>("played_time_seconds"),
+            info.get<std::string>("whitelist"),
+            info.get<std::string>("blacklist")
         );
     }
 
@@ -96,9 +125,14 @@ std::optional<std::filesystem::path> SavesManager::getSavePath(const std::string
     return path;
 }
 
+std::string SavesManager::generateSaveDirectoryName(const std::string_view save_name)
+{
+    return std::string{save_name};
+}
+
 bool SavesManager::deleteSave(const std::string_view name)
 {
-    return std::filesystem::remove(saves_path / name);
+    return std::filesystem::remove_all(saves_path / name);
 }
 
 bool SavesManager::setName(
@@ -106,7 +140,7 @@ bool SavesManager::setName(
     const std::string_view new_name
 )
 {
-    if(nameIsFree)
+    if(nameIsFree(save_name))
     {
         return false;
     }
@@ -116,7 +150,7 @@ bool SavesManager::setName(
 
         info.put("name", new_name);
 
-        writeInfoToSave(save_name, info);
+        writeInfoToSave(*getSavePath(save_name), info);
         
         return true;
     }
@@ -145,20 +179,20 @@ bool SavesManager::createSave(
 
         info.put("name", std::string{name});
         info.put("creation_date", std::chrono::system_clock::now());
-        info.put("last_playerd_date", std::chrono::system_clock::now());
+        info.put("last_played_date", std::chrono::system_clock::now());
         info.put("played_time_seconds", 0);
         info.put("whitelist", whitelist);
         info.put("blacklist", blacklist);
 
-        writeInfoToSave(name, info);
+        writeInfoToSave(saves_path / generateSaveDirectoryName(name), info);
 
         return true;
     }
 }
 
-void SavesManager::writeInfoToSave(const std::string_view save_name, const boost::property_tree::ptree& info)
+void SavesManager::writeInfoToSave(const std::filesystem::path save_path, const boost::property_tree::ptree& info)
 {
-    std::ofstream info_file {*getSavePath(save_name) / "info.json"};
+    std::ofstream info_file {save_path / "info.json"};
 
     boost::property_tree::write_json(info_file, info);
 }
