@@ -1,12 +1,12 @@
 #pragma once
 
 #include <map>
-#include <boost/json.hpp>
-
 #include "app.hpp"
 #include "nets.hpp"
 
 #include "../messages.hpp"
+
+#include "saves_manager.hpp"
 
 class Remote : public nets::TcpRemote<Messages>
 {
@@ -35,8 +35,6 @@ class ServerApp
 
         virtual void onClientConnection         (std::shared_ptr<Remote> client) override;  
         virtual void onForbiddenClientConnection(std::shared_ptr<Remote> client) override;
-
-        void createNewSave();
 
         void showEditSavePopup();
 
@@ -105,4 +103,6 @@ class ServerApp
 
         const std::filesystem::path saves_folder  {"../saves"};
         const std::filesystem::path assets_folder {"../assets"};
+
+        SavesManager saves_manager {saves_folder};
 };

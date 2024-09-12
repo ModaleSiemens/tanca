@@ -114,7 +114,7 @@ std::optional<std::filesystem::path> SavesManager::getSavePath(const std::string
 
     for(const auto& save_folder : std::filesystem::directory_iterator(saves_path))
     {
-        const auto info {readInfoFromSave(save_folder.path() / "info.json")};
+        const auto info {readInfoFromSave(save_folder.path())};
 
         if(info.get<std::string>("name") == name)
         {
@@ -132,7 +132,18 @@ std::string SavesManager::generateSaveDirectoryName(const std::string_view save_
 
 bool SavesManager::deleteSave(const std::string_view name)
 {
-    return std::filesystem::remove_all(saves_path / name);
+    const auto path {getSavePath(name)};
+
+    if(!path)
+    {
+        return false;
+    }
+    else 
+    {
+        std::filesystem::remove_all(*getSavePath(name));
+
+        return true;
+    }
 }
 
 bool SavesManager::setName(
@@ -156,9 +167,58 @@ bool SavesManager::setName(
     }
 }
 
+bool SavesManager::setWhitelist(const std::string_view save_name, const std::string_view whitelist)
+{
+    if(nameIsFree(save_name))
+    {
+        return false;
+    }
+    else 
+    {
+        auto info {readInfoFromSave(*getSavePath(save_name))};
+
+        info.put("whitelist", whitelist);
+
+        writeInfoToSave(*getSavePath(save_name), info);
+        
+        return true;
+    }
+}
+
+bool SavesManager::setBlacklist(const std::string_view save_name, const std::string_view blacklist)
+{
+    if(nameIsFree(save_name))
+    {
+        return false;
+    }
+    else 
+    {
+        auto info {readInfoFromSave(*getSavePath(save_name))};
+
+        info.put("blacklist", blacklist);
+
+        writeInfoToSave(*getSavePath(save_name), info);
+        
+        return true;
+    }
+}
+
 bool SavesManager::increasePlayedTime(const std::string_view save_name, const Seconds played_time)
 {
-    const auto save_path {getSavePath("save_name")};
+    if(nameIsFree(save_name))
+    {
+        return false;
+    }
+    else 
+    {
+        auto info {readInfoFromSave(*getSavePath(save_name))};
+
+        info.put("played_time_seconds", info.get<std::size_t>("played_time_seconds") + played_time.count());
+
+        writeInfoToSave(*getSavePath(save_name), info);
+        
+        return true;
+    }
 }
 
 bool SavesManager::createSave(

@@ -37,7 +37,10 @@ class SavesManager
 
         SavesManager(const std::filesystem::path saves_path);
 
-        bool setName           (const std::string_view save_name, const std::string_view new_name);
+        bool setName     (const std::string_view save_name, const std::string_view new_name);
+        bool setWhitelist(const std::string_view save_name, const std::string_view whitelist);
+        bool setBlacklist(const std::string_view save_name, const std::string_view blacklist);
+        
         bool increasePlayedTime(const std::string_view save_name, const Seconds played_time);
 
         bool createSave(

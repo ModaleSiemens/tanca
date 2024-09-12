@@ -5,7 +5,6 @@
 #include <filesystem>
 #include <thread>
 #include <chrono>
-#include <boost/json/src.hpp>
 
 using namespace std::chrono_literals;
 
@@ -218,6 +217,8 @@ void ServerApp::setupRunningInterface()
 {
     main_window->loadWidgetsFromFile("../assets/interfaces/server/running.txt");
 
+    updateSavesList();
+
     main_window->getWidget<tgui::Button>("close_button")->onClick(
         [&, this]
         {
@@ -329,11 +330,24 @@ void ServerApp::setupRunningInterface()
 
 void ServerApp::updateSavesList()
 {
+    using namespace std::chrono;
+
     auto saves_list {main_window->getWidget<tgui::ListView>("saves_listview")};
 
-    for(const auto& dir_entry : std::filesystem::directory_iterator{saves_folder})
-    {
+    saves_list->removeAllItems();
 
+    auto saves {saves_manager.getSaves()};
+
+    for(auto& save : saves)
+    {
+        saves_list->addItem(
+            {
+                save.name,
+                getFormattedTime(static_cast<seconds>(save.played_time_seconds)),
+                save.last_played_date.erase(save.last_played_date.find('.')),
+                save.creation_date.erase(save.creation_date.find('.'))
+            }
+        );
     }
 }
 
@@ -348,6 +362,29 @@ void ServerApp::showEditSavePopup()
     popup->setSize({600, 400});
     popup->setTitle("Edit save!");
 
+    const auto selected_save_index {main_window->getWidget<tgui::ListView>("saves_listview")->getSelectedItemIndex()};
+
+    if(selected_save_index != -1)
+    {
+        std::println("{}", main_window->getWidget<tgui::ListView>("saves_listview")->getItem(selected_save_index).toStdString());
+
+        const auto save_info {
+            saves_manager.getSave(main_window->getWidget<tgui::ListView>("saves_listview")->getItem(selected_save_index).toStdString())
+        };
+
+        popup->getWidget<tgui::EditBox>("name_editbox")->setText(
+            save_info->name
+        );        
+
+        popup->getWidget<tgui::TextArea>("whitelist_textarea")->setText(
+            save_info->whitelist
+        );        
+
+        popup->getWidget<tgui::TextArea>("blacklist_textarea")->setText(
+            save_info->blacklist
+        );                     
+    }
+
     popup->getWidget<tgui::Button>("abort_button")->onClick(
         [&, popup, this]   
         {
@@ -356,31 +393,120 @@ void ServerApp::showEditSavePopup()
     );  
 
     popup->getWidget<tgui::Button>("save_button")->onClick(
-        [&, popup, this]
+        [&, popup, selected_save_index, this]
         {
+            if(selected_save_index == -1)
+            {
 
+                if(
+                    saves_manager.createSave(
+                        popup->getWidget<tgui::EditBox>("name_editbox")->getText().toStdString(),
+                        popup->getWidget<tgui::TextArea>("whitelist_textarea")->getText().toStdString(),
+                        popup->getWidget<tgui::TextArea>("blacklist_textarea")->getText().toStdString()
+                    )
+                )
+                {
+                    addWindowToRemoveList(popup);
+                }
+                else
+                {
+                    popup->setTitle("Failed to create save!");
+                }
+            }
+            else 
+            {
+                const auto original_name {
+                    main_window->getWidget<tgui::ListView>("saves_listview")->getItem(selected_save_index).toStdString()
+                };
+
+                if(
+                    const auto new_name {
+                        popup->getWidget<tgui::EditBox>("name_editbox")->getText().toStdString()
+                    };
+                    new_name == ""
+                )
+                {
+                    popup->setTitle("Save name can't be empty!");
+                }
+                else 
+                {
+                    saves_manager.setWhitelist(
+                        original_name,
+                        popup->getWidget<tgui::TextArea>("whitelist_textarea")->getText().toStdString()
+                    );
+
+                    saves_manager.setBlacklist(
+                        original_name,
+                        popup->getWidget<tgui::TextArea>("blacklist_textarea")->getText().toStdString()
+                    );
+
+                    saves_manager.setName(
+                        original_name,
+                        new_name
+                    );
+
+                    addWindowToRemoveList(popup);
+                }
+
+            }
+
+            updateSavesList();
         }
     );
-}
-
-void ServerApp::createNewSave()
-{
-    std::filesystem::create_directory(saves_folder / new_world_name);
-
-    
-
 }
 
 void ServerApp::setupWelcomeInterface()
 {
     main_window->loadWidgetsFromFile("../assets/interfaces/server/setup.txt");
 
+    updateSavesList();
+
     main_window->getWidget<tgui::Button>("new_save_button")->onClick(
         [&, this]
         {
+            main_window->getWidget<tgui::ListView>("saves_listview")->deselectItems();
+
             showEditSavePopup();
         }
     );
+
+    main_window->getWidget<tgui::Button>("edit_save_button")->onClick(
+        [&, this]
+        {
+            if(main_window->getWidget<tgui::ListView>("saves_listview")->getSelectedItemIndex() != -1)
+            {
+                showEditSavePopup();
+            }
+        }
+    );    
+
+    main_window->getWidget<tgui::Button>("delete_save_button")->onClick(
+        [&, this]
+        {
+
+            const auto selected_save_index {
+                main_window->getWidget<tgui::ListView>("saves_listview")->getSelectedItemIndex()
+            };
+
+            if(selected_save_index != -1)
+            {
+                if(
+                    saves_manager.deleteSave(
+                        main_window->getWidget<tgui::ListView>("saves_listview")->getItem(selected_save_index).toStdString()
+                    )
+                )
+                {
+                    updateSavesList();
+                }
+                else 
+                {
+
+                }
+            }
+
+        }
+    );
+
 
     main_window->getWidget<tgui::Button>("start_button")->onClick(
         [&, this]
