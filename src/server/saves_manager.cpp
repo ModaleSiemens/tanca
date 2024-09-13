@@ -127,7 +127,58 @@ std::optional<std::filesystem::path> SavesManager::getSavePath(const std::string
 
 std::string SavesManager::generateSaveDirectoryName(const std::string_view save_name)
 {
-    return std::string{save_name};
+    auto name {std::string{save_name}};
+
+    std::for_each(
+        name.begin(),
+        name.end(),
+        [&](char& c)
+        {
+            c = std::isalnum(c) ? c : '_';
+        } 
+    );
+
+    if(std::filesystem::exists(saves_path / name))
+    {
+        std::size_t largest_save_index {0};        
+
+        for(const auto& save : std::filesystem::directory_iterator{saves_path})
+        {
+            const auto current_save_name {save.path().filename().string()};
+
+            if(
+                const auto dash_pos {current_save_name.rfind('-')};
+                dash_pos != std::string::npos
+            )
+            {
+                if(current_save_name.substr(0, dash_pos) == name)
+                {
+                    const auto save_index {
+                        std::stoull(
+                            current_save_name.substr(
+                                dash_pos,
+                                std::string::npos
+                            )
+                        )
+                    };
+
+                    if(save_index > largest_save_index)
+                    {
+                        largest_save_index = save_index;
+                    }
+                }
+            }
+        }
+
+        name += std::format("-{}", largest_save_index + 1);
+    }
+
+    return name;
+}
+
+bool SavesManager::saveExists(const std::string_view name)
+{
+    return getSavePath(name).has_value();
 }
 
 bool SavesManager::deleteSave(const std::string_view name)
@@ -151,7 +202,7 @@ bool SavesManager::setName(
     const std::string_view new_name
 )
 {
-    if(nameIsFree(save_name))
+    if(!saveExists(save_name))
     {
         return false;
     }
@@ -169,7 +220,7 @@ bool SavesManager::setName(
 
 bool SavesManager::setWhitelist(const std::string_view save_name, const std::string_view whitelist)
 {
-    if(nameIsFree(save_name))
+    if(!saveExists(save_name))
     {
         return false;
     }
@@ -187,7 +238,7 @@ bool SavesManager::setWhitelist(const std::string_view save_name, const std::str
 
 bool SavesManager::setBlacklist(const std::string_view save_name, const std::string_view blacklist)
 {
-    if(nameIsFree(save_name))
+    if(!saveExists(save_name))
     {
         return false;
     }
@@ -205,9 +256,9 @@ bool SavesManager::setBlacklist(const std::string_view save_name, const std::str
 
 bool SavesManager::increasePlayedTime(const std::string_view save_name, const Seconds played_time)
 {
-    if(nameIsFree(save_name))
+    if(!saveExists(save_name))
     {
-        return false;
+        return false;   
     }
     else 
     {
@@ -216,7 +267,7 @@ bool SavesManager::increasePlayedTime(const std::string_view save_name, const Se
         info.put("played_time_seconds", info.get<std::size_t>("played_time_seconds") + played_time.count());
 
         writeInfoToSave(*getSavePath(save_name), info);
-        
+    
         return true;
     }
 }
@@ -227,13 +278,15 @@ bool SavesManager::createSave(
     const std::string_view blacklist
 )
 {
-    if(!nameIsFree(name))
+    if(saveExists(name))
     {
         return false;
     }
     else 
     {
-        std::filesystem::create_directory(saves_path / name);
+        const auto dir_name {generateSaveDirectoryName(name)};
+
+        std::filesystem::create_directory(saves_path / dir_name);
 
         boost::property_tree::ptree info;
 
@@ -244,7 +297,7 @@ bool SavesManager::createSave(
         info.put("whitelist", whitelist);
         info.put("blacklist", blacklist);
 
-        writeInfoToSave(saves_path / generateSaveDirectoryName(name), info);
+        writeInfoToSave(saves_path / dir_name, info);
 
         return true;
     }

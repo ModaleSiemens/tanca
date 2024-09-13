@@ -68,4 +68,6 @@ class SavesManager
         void createSaveDirectory(const std::string_view name);
 
         std::string generateSaveDirectoryName(const std::string_view save_name);
+
+        bool saveExists(const std::string_view name);
 };
