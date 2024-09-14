@@ -157,6 +157,11 @@ void ClientApp::setupMessageCallbacks()
         std::bind(&ClientApp::onServerClientIsWelcome, this, std::placeholders::_1, std::placeholders::_2)
     );     
 
+    server->setOnReceiving(
+        Messages::server_chat_message,
+        std::bind(&ClientApp::onServerChatMessage, this, std::placeholders::_1, std::placeholders::_2)
+    ); 
+
     server->onFailedSending = [&, this](mdsm::Collection data)
     {
         if(debug)
@@ -673,10 +678,34 @@ void ClientApp::onConnectionRefused(mdsm::Collection message, nets::TcpRemote<Me
     );
 }
 
+void ClientApp::onServerChatMessage(mdsm::Collection message, nets::TcpRemote<Messages> &server)
+{
+    main_window->getWidget<tgui::ChatBox>("chat_chatbox")->addLine(
+        message.retrieve<std::string>()
+    );
+}
+
 void ClientApp::setupConnectedToServerInterface()
 {
     main_window->setTitle("Get ready to play!");
     main_window->loadWidgetsFromFile("../assets/interfaces/client/connected.txt");
+
+    auto chat_editbox {main_window->getWidget<tgui::EditBox>("chat_editbox")};
+
+    chat_editbox->onReturnKeyPress(
+        [&, chat_editbox, this]
+        {
+            server->send(
+                mdsm::Collection{}
+                    << Messages::client_chat_message
+                    << chat_editbox->getText().toStdString()
+            );
+
+            //std::lock_guard<std::mutex> inteface_lock_guard {interface_mutex};
+
+            chat_editbox->setText("");
+        }
+    );
 }
 
 void ClientApp::serverListUpdater()

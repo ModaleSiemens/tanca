@@ -57,6 +57,8 @@ class ServerApp
         void onServerManagerUnacceptedNameResponse (mdsm::Collection message, nets::TcpRemote<Messages>& server_manager);
 
         void onClientCredentialsResponse(mdsm::Collection message, nets::TcpRemote<Messages>& client);
+        
+        void onClientChatMessage(mdsm::Collection message, nets::TcpRemote<Messages>& client);
 
         bool clientNicknameIsBanned(const std::string_view nickname);
         bool clientAddressIsBanned(const std::string_view address);

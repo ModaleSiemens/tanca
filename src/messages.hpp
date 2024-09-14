@@ -24,7 +24,8 @@ enum class Messages
     client_connection_request,
     client_probe,
     client_server_address_request,
-
+    client_chat_message,
+    
     // Messages sent from server
     server_client_is_welcome,
     server_client_banned,
@@ -39,6 +40,7 @@ enum class Messages
     server_players_count_response,
     server_connection_accepted,
     server_wrong_password,
+    server_chat_message,
 
     // Messages sent from server manager
     server_manager_connection_refused,

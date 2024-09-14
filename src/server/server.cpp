@@ -182,6 +182,11 @@ void ServerApp::onClientConnection(std::shared_ptr<Remote> client)
         std::bind(&ServerApp::onClientCredentialsResponse, this, std::placeholders::_1, std::placeholders::_2)
     );        
 
+    client->setOnReceiving(
+        Messages::client_chat_message,
+        std::bind(&ServerApp::onClientChatMessage, this, std::placeholders::_1, std::placeholders::_2)
+    );           
+
     client->onFailedSending = [&, this](mdsm::Collection data)
     {
         if(debug)
@@ -216,8 +221,6 @@ void ServerApp::onForbiddenClientConnection(std::shared_ptr<Remote> client)
 void ServerApp::setupRunningInterface()
 {
     main_window->loadWidgetsFromFile("../assets/interfaces/server/running.txt");
-
-    updateSavesList();
 
     main_window->getWidget<tgui::Button>("close_button")->onClick(
         [&, this]
@@ -507,7 +510,6 @@ void ServerApp::setupWelcomeInterface()
         }
     );
 
-
     main_window->getWidget<tgui::Button>("start_button")->onClick(
         [&, this]
         {
@@ -796,6 +798,29 @@ void ServerApp::onClientCredentialsResponse(mdsm::Collection message, nets::TcpR
         );
     }
       
+}
+
+void ServerApp::onClientChatMessage(mdsm::Collection message, nets::TcpRemote<Messages> &client)
+{
+    for(auto client : getClients())
+    {
+        try
+        {
+            client->send(
+                mdsm::Collection{}
+                    << Messages::server_chat_message
+                    << std::format(
+                        "{}: {}",
+                        client->getAddress(),
+                        message.retrieve<std::string>()
+                    )
+            );
+        }
+        catch(...)
+        {
+            // Dummy client
+        }
+    }
 }
 
 bool ServerApp::clientNicknameIsBanned(const std::string_view nickname)

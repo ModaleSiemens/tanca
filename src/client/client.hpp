@@ -48,6 +48,8 @@ class ClientApp : public app::Application, private nets::TcpClient<Messages, Rem
 
         void onConnectionRefused(mdsm::Collection message, nets::TcpRemote<Messages>& server);
 
+        void onServerChatMessage(mdsm::Collection message, nets::TcpRemote<Messages>& server);
+
         void setupConnectedToServerInterface();
 
         void serverListUpdater();
