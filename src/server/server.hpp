@@ -87,16 +87,18 @@ class ServerApp
 
         bool debug {true};
 
-        struct player_data
+        struct PlayerData
         {
-            std::shared_ptr<Remote> remote;
+            std::shared_ptr<nets::TcpRemote<Messages>> remote;
         };
 
         /*
             Map is ordered to enable sorted listing of players
             The key is the nickname
         */ 
-        std::map<std::string, player_data> players;
+        std::map<std::string, PlayerData> players;
+
+        std::string getPlayerNameByRemote(nets::TcpRemote<Messages>& remote);
 
         /*
             Constant used in the new world creation, selection and editing process

@@ -354,6 +354,27 @@ void ServerApp::updateSavesList()
     }
 }
 
+std::string ServerApp::getPlayerNameByRemote(nets::TcpRemote<Messages> &remote)
+{
+    const auto player_iter {
+        std::find_if(
+            players.begin(), players.end(), [&](const auto& iter)
+            {
+                return *(iter.second.remote) == remote;
+            }
+        )
+    };
+
+    if(player_iter != players.end())
+    {
+        return player_iter->first;
+    }
+    else 
+    {
+        return std::string{};
+    }
+}
+
 void ServerApp::showEditSavePopup()
 {
     addWindow<PopUp>(
@@ -779,6 +800,8 @@ void ServerApp::onClientCredentialsResponse(mdsm::Collection message, nets::TcpR
                 << Messages::server_client_is_welcome
         );
 
+        players[std::string{nickname}].remote = client.shared_from_this();
+
         ++players_count;
 
         processClient(client);
@@ -800,7 +823,7 @@ void ServerApp::onClientCredentialsResponse(mdsm::Collection message, nets::TcpR
       
 }
 
-void ServerApp::onClientChatMessage(mdsm::Collection message, nets::TcpRemote<Messages> &client)
+void ServerApp::onClientChatMessage(mdsm::Collection message, nets::TcpRemote<Messages> &t_client)
 {
     for(auto client : getClients())
     {
@@ -811,7 +834,7 @@ void ServerApp::onClientChatMessage(mdsm::Collection message, nets::TcpRemote<Me
                     << Messages::server_chat_message
                     << std::format(
                         "{}: {}",
-                        client->getAddress(),
+                        getPlayerNameByRemote(t_client),
                         message.retrieve<std::string>()
                     )
             );
