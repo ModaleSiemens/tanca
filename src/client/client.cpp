@@ -6,6 +6,8 @@
 #include <thread>
 #include <chrono>
 
+#include <openssl/sha.h>
+
 using namespace std::chrono_literals;
 
 int main()
@@ -619,7 +621,7 @@ void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRe
                     mdsm::Collection{}
                         << Messages::client_credentials_response
                         << nickname
-                        << password
+                        << getHashedString(password)
                 );
             }
         }
@@ -748,6 +750,28 @@ void ClientApp::serverListUpdater()
 
         std::this_thread::sleep_for(PingTime{2.0});    
     }
+}
+
+std::string ClientApp::getHashedString(const std::string_view string)
+{
+    static unsigned char hash [SHA256_DIGEST_LENGTH];
+
+    SHA256_CTX sha256;
+
+    SHA256_Init(&sha256);
+    SHA256_Update(&sha256, string.data(), string.size());
+    SHA256_Final(hash, &sha256);
+
+    std::stringstream string_stream;
+
+    for(size_t i {}; i < SHA256_DIGEST_LENGTH; ++i)
+    {
+        string_stream << std::hex << std::setw(2) << static_cast<int>(hash[i]);
+    }
+
+    std::println("{}", string_stream.str());
+
+    return string_stream.str();
 }
 
 void ClientApp::onServerAddressResponse(mdsm::Collection message, nets::TcpRemote<Messages>& server)

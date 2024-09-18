@@ -54,6 +54,8 @@ class ClientApp : public app::Application, private nets::TcpClient<Messages, Rem
 
         void serverListUpdater();
 
+        std::string getHashedString(const std::string_view string);
+
         //bool setBackButton(const std::string interface_path, void (ClientApp::* function)());
         std::shared_ptr<tgui::Button> getBackButton();
 
