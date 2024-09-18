@@ -17,10 +17,13 @@ add_project_link_arguments(
 
 libapp_proj  = subproject('app')
 libnets_proj = subproject('nets')
+lib_openssl = subproject('openssl')
+
 
 deps = [
     dependency('libapp'),
-    dependency('libnets')
+    dependency('libnets'),
+    dependency('libcrypto')
 ]
 
 subdir('src')

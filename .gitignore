@@ -6,6 +6,8 @@ subprojects/collection
 subprojects/app
 subprojects/nets
 subprojects/tgui
+subprojects/packagecache
+subprojects/openssl-3.0.8
 subprojects/collection.wrap
 subprojects/tgui.wrap
 native_file.txt
