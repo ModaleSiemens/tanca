@@ -559,8 +559,11 @@ void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRe
 
             disconnect();
 
+            setupWelcomeInterface();
+            
             status = Status::not_connected;
 
+            /*
             setServerAddress(server_manager_address);
             setServerPort(server_manager_port);
 
@@ -574,6 +577,7 @@ void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRe
             {
                 setupServerManagerPromptInterface();
             }
+            */
         }
     );
 
