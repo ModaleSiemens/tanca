@@ -825,6 +825,8 @@ void ServerApp::onClientCredentialsResponse(mdsm::Collection message, nets::TcpR
 
 void ServerApp::onClientChatMessage(mdsm::Collection message, nets::TcpRemote<Messages> &t_client)
 {
+    if(debug) logRemoteMessage("Received \"client_chat_message\"", t_client);
+
     for(auto client : getClients())
     {
         try
@@ -841,7 +843,7 @@ void ServerApp::onClientChatMessage(mdsm::Collection message, nets::TcpRemote<Me
         }
         catch(...)
         {
-            // Dummy client
+            // Placeholder client
         }
     }
 }

@@ -14,9 +14,9 @@ int main()
 
     while(true)
     {
-        std::this_thread::sleep_for(16ms);
+        std::this_thread::sleep_for(50ms);
 
-        client_app.update(16ms);
+        client_app.update(50ms);
     }
 
     return 0;
@@ -54,7 +54,7 @@ void ClientApp::update(const app::Seconds elapsed_seconds)
         setupConnectedToServerInterface(); 
     }
 
-    std::lock_guard<std::mutex> lock_guard {interface_mutex};
+    std::scoped_lock inteface_lock {interface_mutex};
 
     Application::update(elapsed_seconds);
 }
@@ -184,7 +184,7 @@ void ClientApp::setupMessageCallbacks()
 }
 
 void ClientApp::setupWelcomeInterface()
-{   
+{
     main_window->loadWidgetsFromFile("../assets/interfaces/client/welcome.txt");
 
     main_window->getWidget<tgui::Button>("by_name_button")->onClick(
@@ -439,7 +439,7 @@ void ClientApp::onServerListResponse(mdsm::Collection servers_data, nets::TcpRem
         );
     }
     
-    std::lock_guard<std::mutex> lock_guard {internal_server_list_mutex};
+    std::scoped_lock server_list_lock {internal_server_list_mutex};
     
     internal_server_list.clear();
 
@@ -540,6 +540,8 @@ void ClientApp::onServerCredentialsRequest(mdsm::Collection message, nets::TcpRe
             "[{}]: Received \"server_credentials_request\" ({}:{}).", getFormattedCurrentTime(), server.getAddress(), server.getPort()
         );
     }
+
+    std::scoped_lock inteface_lock {interface_mutex};
 
     addWindow<PopUp>(
         "credentials_popup", true, "../assets/interfaces/client/credentials_popup.txt"
@@ -695,15 +697,16 @@ void ClientApp::setupConnectedToServerInterface()
     chat_editbox->onReturnKeyPress(
         [&, chat_editbox, this]
         {
-            server->send(
-                mdsm::Collection{}
-                    << Messages::client_chat_message
-                    << chat_editbox->getText().toStdString()
-            );
+            if(const auto text {chat_editbox->getText().toStdString()}; !text.empty())
+            {
+                server->send(
+                    mdsm::Collection{}
+                        << Messages::client_chat_message
+                        << text
+                );
 
-            //std::lock_guard<std::mutex> inteface_lock_guard {interface_mutex};
-
-            chat_editbox->setText("");
+                chat_editbox->setText("");
+            }
         }
     );
 }
@@ -714,13 +717,13 @@ void ClientApp::serverListUpdater()
     {
         if(main_window->getWidget("servers_listview") != nullptr && status.load() == Status::connected_to_server_manager)
         {   
-            std::lock_guard<std::mutex> interface_lock_guard {interface_mutex};
+            std::scoped_lock inteface_lock {interface_mutex};
 
             server->send(mdsm::Collection{} << Messages::client_server_list_request);
 
             auto server_listview {main_window->getWidget<tgui::ListView>("servers_listview")};
 
-            std::lock_guard<std::mutex> lock_guard {internal_server_list_mutex};
+            std::scoped_lock server_list_lock {internal_server_list_mutex};
 
             server_listview->removeAllItems();
 
