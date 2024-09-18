@@ -431,7 +431,6 @@ void ClientApp::setupByNamePromptInterface()
 
 void ClientApp::onServerListResponse(mdsm::Collection servers_data, nets::TcpRemote<Messages> &server)
 {
-
     if(debug)
     {
         std::println(
@@ -682,6 +681,8 @@ void ClientApp::onConnectionRefused(mdsm::Collection message, nets::TcpRemote<Me
 
 void ClientApp::onServerChatMessage(mdsm::Collection message, nets::TcpRemote<Messages> &server)
 {
+    if(debug) logRemoteMessage("Received \"server_chat_message\"", server);
+
     main_window->getWidget<tgui::ChatBox>("chat_chatbox")->addLine(
         message.retrieve<std::string>()
     );
