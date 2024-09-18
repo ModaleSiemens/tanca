@@ -73,6 +73,17 @@ class PopUp : public app::Window
         virtual ~PopUp() = default;
 };
 
+void logRemoteMessage(const std::string_view message, const nets::TcpRemote<Messages>& remote)
+{
+    std::println(
+        "[{}]: {} ({}:{}).",
+        getFormattedCurrentTime(),
+        message,
+        remote.getAddress(),
+        remote.getPort()
+    );
+}
+
 PopUp::PopUp(app::Application& app, const std::string_view interface_path)
 :
     Window{app, interface_path, sf::VideoMode(500, 250), "Alert!", sf::Style::Titlebar}
